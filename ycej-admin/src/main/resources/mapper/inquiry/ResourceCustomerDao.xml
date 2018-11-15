@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.inquiry.dao.ResourceCustomerDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.inquiry.entity.ResourceCustomerEntity" id="resourceCustomerMap">
+        <result property="resourceId" column="resource_id"/>
+        <result property="resourceName" column="resource_name"/>
+        <result property="provinceId" column="province_id"/>
+        <result property="provinceName" column="province_name"/>
+        <result property="cityId" column="city_id"/>
+        <result property="cityName" column="city_name"/>
+        <result property="contact" column="contact"/>
+        <result property="mobile" column="mobile"/>
+        <result property="password" column="password"/>
+        <result property="remark" column="remark"/>
+        <result property="insTime" column="ins_time"/>
+        <result property="insUser" column="ins_user"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateResourceCustomer" parameterType="com.yicheejia.modules.inquiry.entity.ResourceCustomerEntity" >
+		update ycej_resource_customer
+		<trim prefix="set" suffixOverrides=",">
+		<if test="resourceId != null">  resource_id = #{resourceId}, </if> 
+		<if test="resourceName != null">  resource_name = #{resourceName}, </if> 
+		<if test="provinceId != null">  province_id = #{provinceId}, </if> 
+		<if test="provinceName != null">  province_name = #{provinceName}, </if> 
+		<if test="cityId != null">  city_id = #{cityId}, </if> 
+		<if test="cityName != null">  city_name = #{cityName}, </if> 
+		<if test="contact != null">  contact = #{contact}, </if> 
+		<if test="mobile != null">  mobile = #{mobile}, </if> 
+		<if test="password != null">  password = #{password}, </if> 
+		<if test="remark != null">  remark = #{remark}, </if> 
+		<if test="insTime != null">  ins_time = #{insTime}, </if> 
+		<if test="insUser != null">  ins_user = #{insUser}, </if> 
+		</trim>
+		where
+    </update>
+
+	<select id="queryByUserMobile" resultType="com.yicheejia.modules.inquiry.entity.ResourceCustomerEntity">
+		select * from ycej_resource_customer where mobile = #{mobile}
+	</select>
+
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarQueryDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarQueryEntity" id="carQueryMap">
+        
+    </resultMap>
+    
+    
+    
+    <select id="selectAllPage" resultType="com.yicheejia.modules.operate.entity.CarQueryEntity">
+		   SELECT
+				i.inventory_id inventoryId,
+				b.car_brand brandName,
+				b.car_brand_id brandId,
+				m.car_manufacturer manufacturerName,
+				m.car_manufacturer_id manufacturerId,
+				s.car_series seriesName,
+				s.car_series_id seriesId,
+				d.car_model modelName,
+				d.car_model_id modelId,
+				(select c.color from ycej_car_color c where c.id = i.car_colour) colour,
+				(select c1.decoration_color from ycej_car_color c1 where c1.id = i.interior_color) interiorColour,
+				i.supplier_id supplierId,
+				r.supplier_name supplierName,
+				i.engine_id engineNo,
+				i.vin vin,
+				h.shop_id shopId,
+				(case when h.shop_name is null then n.warehouse_name else h.shop_name END ) shopName,
+				i.car_status carStatus,
+				i.warehouse_id warehouseId
+			FROM
+				ycej_inventory i
+			LEFT JOIN ycej_car_brand b ON b.car_brand_id = i.car_brand
+			LEFT JOIN ycej_car_manufacturer m ON m.car_manufacturer_id = i.car_manufacturer
+			LEFT JOIN ycej_car_series s ON s.car_series_id = i.car_series
+			LEFT JOIN ycej_car_model d ON d.car_model_id = i.car_model
+			LEFT JOIN ycej_shop h on h.shop_id = i.shop_id
+			LEFT JOIN ycej_supplier r on r.supplier_id = i.supplier_id
+			left join ycej_warehouse_management n on n.id=i.warehouse_id
+			where 
+			1=1
+			<if test="keyword != null and keyword !=''">
+				and (b.car_brand like "%"#{keyword}"%" or m.car_manufacturer like "%"#{keyword}"%" or s.car_series like "%"#{keyword}"%" or d.car_model like "%"#{keyword}"%" or i.vin like "%"#{keyword}"%")
+			</if>
+			<if test="inventoryShop != null and inventoryShop != ''">
+				and (h.shop_id = #{inventoryShop} or n.id = #{inventoryShop})
+			</if>
+			<if test="state != null and state != ''">
+				and i.car_status = #{state}
+			</if>
+			<choose>
+            <when test="filterFlag == 1">
+                <if test="shop_id_list != null and shop_id_list.size() > 0">
+		           AND i.shop_id IN
+		           <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+		               #{shopId}
+		           </foreach>
+    			</if>
+            </when>
+            <otherwise>
+<!--                 OR a.warehouse_id IS NOT NULL -->
+            </otherwise>
+         </choose>
+         order by i.update_time desc
+    </select>
+    
+    
+    
+</mapper>

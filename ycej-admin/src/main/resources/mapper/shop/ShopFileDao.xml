@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.shop.dao.ShopFileDao">
+
+
+    
+    <select id="selectByShopId" resultType="com.yicheejia.modules.shop.entity.ShopFileEntity">
+        SELECT
+            shop_id AS shopId,
+            front_file_id AS frontFileId,
+            back_file_id AS backFileId,
+            front_img AS frontImg,
+            back_img AS backImg
+        FROM
+            ycej_shop_file
+        WHERE
+            shop_id = #{shopId}
+    </select>
+    
+    <update id="updateByShopId" parameterType="com.yicheejia.modules.shop.entity.ShopFileEntity">
+        UPDATE ycej_shop_file
+        <set>
+            <if test="frontFileId != null">
+                front_file_id = #{frontFileId},
+            </if>
+            <if test="backFileId != null">
+                back_file_id = #{backFileId},
+            </if>
+            <if test="frontImg != null">
+                front_img = #{frontImg},
+            </if>
+            <if test="backImg != null">
+                back_img = #{backImg},
+            </if>
+        </set>
+        WHERE shop_id = #{shopId}
+    </update>
+
+</mapper>

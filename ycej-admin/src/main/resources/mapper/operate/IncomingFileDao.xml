@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.IncomingFileDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.IncomingFileEntity" id="incomingFileMap">
+        <result property="id" column="id"/>
+        <result property="dailyIncomingId" column="daily_incoming_id"/>
+        <result property="imgName" column="img_name"/>
+        <result property="fileId" column="file_id"/>
+        <result property="fileType" column="file_type"/>
+        <result property="insertUser" column="insert_user"/>
+        <result property="insertTime" column="insert_time"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateIncomingFile" parameterType="com.yicheejia.modules.operate.entity.IncomingFileEntity" >
+		update ycej_incoming_file
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="dailyIncomingId != null">  daily_incoming_id = #{dailyIncomingId}, </if> 
+		<if test="imgName != null">  img_name = #{imgName}, </if> 
+		<if test="fileId != null">  file_id = #{fileId}, </if> 
+		<if test="fileType != null">  file_type = #{fileType}, </if> 
+		<if test="insertUser != null">  insert_user = #{insertUser}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		</trim>
+		where
+    </update>
+    <select id="queryList" parameterType="map" resultType="com.yicheejia.modules.operate.entity.IncomingFileEntity">
+		SELECT
+			t.id id,
+			t.daily_incoming_id AS dailyIncomingId,
+			t.img_name AS imgName,
+			t.file_id AS fileId,
+			t.insert_user AS insertUser,
+			t.insert_time AS insertTime,
+			t.file_type AS fileType,
+			t1.file_name AS fileName,
+			t1.file_path AS filePath
+		FROM
+			ycej_incoming_file t
+		LEFT JOIN ycej_file t1 ON t.file_id = t1.file_id
+		WHERE
+			t1.is_enabled = 1
+		  <if test="dailyIncomingId !=null and dailyIncomingId !=''">
+		        AND t.daily_incoming_id = #{dailyIncomingId}
+		  </if>
+		  <if test="fileType !=null and fileType !=''">
+		  		AND t.file_type = #{fileType}
+		  </if>
+ </select>
+
+</mapper>

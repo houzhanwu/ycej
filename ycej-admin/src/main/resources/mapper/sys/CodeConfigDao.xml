@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.sys.dao.CodeConfigDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.sys.entity.CodeConfigEntity" id="codeConfigMap">
+        <result property="codeConfigId" column="code_config_id"/>
+        <result property="constant" column="constant"/>
+        <result property="serialDate" column="serial_date"/>
+        <result property="serialLength" column="serial_length"/>
+        <result property="serialValue" column="serial_value"/>
+    </resultMap>
+    
+    <update id="updateSerialValue">
+	    UPDATE ycej_code_config a
+	        SET a.serial_value = a.serial_value + 1
+	    WHERE
+	            a.code_config_id = #{codeConfigId}
+    </update>
+    
+    <update id="resetSerialValue">
+		UPDATE ycej_code_config a
+		  SET a.serial_value = 1,
+		      a.serial_date = #{serialDate}
+		WHERE
+		    a.code_config_id = #{codeConfigId}
+    </update>
+    
+    
+    
+
+</mapper>

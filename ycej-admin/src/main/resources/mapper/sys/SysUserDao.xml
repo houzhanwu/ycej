@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.sys.dao.SysUserDao">
+	
+	<!-- 查询用户的所有权限 -->
+	<select id="queryAllPerms" resultType="string">
+		select m.perms from sys_user_role ur 
+			LEFT JOIN sys_role_menu rm on ur.role_id = rm.role_id 
+			LEFT JOIN sys_menu m on rm.menu_id = m.menu_id 
+		where ur.user_id = #{userId}
+	</select>
+
+	<select id="queryByUserIdList" parameterType="java.util.List" resultType="java.util.Map">
+		select user_id as userId,name as Name from sys_user where user_id IN
+		<foreach collection="list" item="userId" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+	</select>
+	
+	<!-- 查询用户的所有菜单ID --> 
+	<select id="queryAllMenuId" resultType="long">
+		select distinct rm.menu_id from sys_user_role ur 
+			LEFT JOIN sys_role_menu rm on ur.role_id = rm.role_id 
+		where ur.user_id = #{userId}
+	</select>
+	<select id="queryByUserName" resultType="com.yicheejia.modules.sys.entity.SysUserEntity">
+		select * from sys_user where username = #{username}
+	</select>
+	<select id="selectClient" resultType="map">
+		select * from sys_user where user_id = #{userId}
+	</select>
+	
+	<delete id="deleteBatch">
+		delete from sys_user where user_id in 
+		<foreach item="userId" collection="array" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+		;
+		delete from sys_user_role where user_id in 
+		<foreach item="userId" collection="array" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+	</delete>
+	
+	<!-- 根据角色，门店查询对应用户 -->
+    <select id="queryUserByShopRole" resultType="string">
+		SELECT
+		    a.username
+		FROM
+		    sys_user a
+		INNER JOIN sys_user_role b ON a.user_id = b.user_id
+		INNER JOIN sys_role c ON b.role_id = c.role_id
+		INNER JOIN sys_user_shop d ON a.user_id = d.user_id
+		INNER JOIN ycej_shop e ON d.shop_id = e.shop_id
+		WHERE
+		1=1
+		<if test="shopNO != null and shopNO != ''">
+		   and e.shop_id = #{shopNO}
+		</if>
+		<if test="roleName != null and roleName != ''">
+		  and c.role_name = #{roleName}
+		</if>
+    </select>
+    
+    <!-- 根据角色，门店查询对应用户(for调拨确认) -->
+    <select id="queryUserByRoleAndShopId" resultType="string">
+		SELECT
+		    DISTINCT a.username
+		FROM
+		    sys_user a
+		INNER JOIN sys_user_role b ON a.user_id = b.user_id
+		INNER JOIN sys_role c ON b.role_id = c.role_id
+		<choose>
+            <when test="dataFilter == 1">
+	            INNER JOIN sys_user_shop d ON a.user_id = d.user_id
+				INNER JOIN ycej_shop e ON d.shop_id = e.shop_id
+                WHERE
+		   			e.shop_id = #{shopId}
+				AND c.role_name = #{roleName}
+            </when>
+            <otherwise>
+				 WHERE c.role_name = #{roleName}
+            </otherwise>
+	    </choose>
+    </select>
+        <!-- 根据角色，门店查询对应用户(for调拨确认) -->
+    <select id="queryUserByRoleAndShopIdTo" resultType="string">
+		SELECT
+		    DISTINCT a.username
+		FROM
+		    sys_user a
+		INNER JOIN sys_user_role b ON a.user_id = b.user_id
+		INNER JOIN sys_role c ON b.role_id = c.role_id
+        INNER JOIN sys_user_shop d ON a.user_id = d.user_id
+		INNER JOIN ycej_shop e ON d.shop_id = e.shop_id
+              WHERE
+   			e.shop_id = #{shopId}
+		AND c.role_name = #{roleName}
+    </select>
+    
+    <select id="selectNamebyAccount"  parameterType="java.util.List" resultType="com.yicheejia.modules.sys.entity.SysUserEntity">
+        select a.username,a.name from sys_user a where a.username in
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+             #{item}       
+        </foreach>
+    </select>
+    
+	<select id="selectNamebyId"  parameterType="java.util.List" resultType="com.yicheejia.modules.sys.entity.SysUserEntity">
+        select a.user_id as userId,a.name from sys_user a where a.user_id in
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+             #{item}       
+        </foreach>
+    </select>
+	<select id="selectIdsByUserNames" parameterType="java.util.List" resultType="string">
+		select a.user_id as userId from sys_user a where a.username in
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+             #{item}       
+        </foreach>
+	</select>
+	<select id="selectPhoneByUserNames" parameterType="java.util.List" resultType="string">
+		select a.mobile as mobile from sys_user a where a.username in
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+             #{item}       
+        </foreach>
+	</select>
+	<select id="queryUserByRoleForPutMessage" resultType="string">
+		select a.user_id  from sys_user a
+		INNER JOIN sys_user_role b ON a.user_id = b.user_id
+		INNER JOIN sys_role c ON b.role_id = c.role_id
+		where c.role_name = #{roleName}
+	</select>
+	<select id="queryPhoneByRoleForPutMessaging" resultType="string">
+		select a.mobile  from sys_user a
+		INNER JOIN sys_user_role b ON a.user_id = b.user_id
+		INNER JOIN sys_role c ON b.role_id = c.role_id
+		where c.role_name = #{roleName}
+		order by a.mobile desc
+	</select>
+	<select id="selectNameByUsername" resultType="string">
+		select name from sys_user where username = #{username}
+	</select>
+	<update id="updateBySql">
+		update sys_user set clientId = #{arg0} where user_id=#{arg1}
+	</update>
+
+</mapper>

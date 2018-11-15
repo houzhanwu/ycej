@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.IncomingDetailDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.IncomingDetailEntity" id="incomingDetailMap">
+        <result property="id" column="id"/>
+        <result property="dailyIncomingId" column="daily_incoming_id"/>
+        <result property="carBrand" column="car_brand"/>
+        <result property="carBrandName" column="car_brand_name"/>
+        <result property="carManufacturer" column="car_manufacturer"/>
+        <result property="carManufacturerName" column="car_manufacturer_name"/>
+        <result property="carSeries" column="car_series"/>
+        <result property="carSeriesName" column="car_series_name"/>
+        <result property="carModel" column="car_model"/>
+        <result property="carModelName" column="car_model_name"/>
+        <result property="carDisplacement" column="car_displacement"/>
+        <result property="carSeat" column="car_seat"/>
+        <result property="appearance" column="appearance"/>
+        <result property="appearanceColor" column="appearance_color"/>
+        <result property="vin" column="vin"/>
+        <result property="productDate" column="product_date"/>
+        <result property="inboundDate" column="inbound_date"/>
+        <result property="insertUser" column="insert_user"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateIncomingDetail" parameterType="com.yicheejia.modules.operate.entity.IncomingDetailEntity" >
+		update ycej_incoming_detail
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="dailyIncomingId != null">  daily_incoming_id = #{dailyIncomingId}, </if> 
+		<if test="carBrand != null">  car_brand = #{carBrand}, </if> 
+		<if test="carBrandName != null">  car_brand_name = #{carBrandName}, </if> 
+		<if test="carManufacturer != null">  car_manufacturer = #{carManufacturer}, </if> 
+		<if test="carManufacturerName != null">  car_manufacturer_name = #{carManufacturerName}, </if> 
+		<if test="carSeries != null">  car_series = #{carSeries}, </if> 
+		<if test="carSeriesName != null">  car_series_name = #{carSeriesName}, </if> 
+		<if test="carModel != null">  car_model = #{carModel}, </if> 
+		<if test="carModelName != null">  car_model_name = #{carModelName}, </if> 
+		<if test="carDisplacement != null">  car_displacement = #{carDisplacement}, </if> 
+		<if test="carSeat != null">  car_seat = #{carSeat}, </if> 
+		<if test="appearance != null">  appearance = #{appearance}, </if> 
+		<if test="appearanceColor != null">  appearance_color = #{appearanceColor}, </if> 
+		<if test="vin != null">  vin = #{vin}, </if> 
+		<if test="productDate != null">  product_date = #{productDate}, </if> 
+		<if test="inboundDate != null">  inbound_date = #{inboundDate}, </if> 
+		<if test="insertUser != null">  insert_user = #{insertUser}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="remark != null">  remark = #{remark}, </if> 
+		</trim>
+		where
+    </update>
+
+</mapper>

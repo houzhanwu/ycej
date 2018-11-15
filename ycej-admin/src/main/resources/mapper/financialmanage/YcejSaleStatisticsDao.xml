@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.YcejSaleStatisticsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.YcejSaleStatisticsEntity" id="ycejSaleStatisticsMap">
+        <result property="id" column="id"/>
+        <result property="order_no" column="order_no"/>
+        <result property="area" column="area"/>
+        <result property="belongShop" column="belongShop"/><!-- 所属门店 -->
+        <result property="carModel" column="carModel"/><!-- 车型 -->
+        <result property="sell_type" column="sell_type"/><!-- 购买方式 -->
+        <result property="customer_name" column="customer_name"/><!-- 客户姓名 -->
+        <result property="financialPro" column="financialPro"/><!-- 产品方案 -->
+        <result property="sell_price" column="sell_price"/><!-- 销售价格 -->
+        <result property="saleTime" column="saleTime"/><!-- 定金支付时间 -->
+        <result property="appointMoney" column="appointMoney"/><!-- 定金 -->
+        <result property="collectionType" column="collectionType"/><!-- 定金支付方式 -->
+        <result property="downPayment" column="downPayment"/><!-- 首付 -->
+        <result property="finalPayment" column="finalPayment"/>
+        <result property="renewDeposit" column="renewDeposit"/>
+        <result property="carLicenseFee" column="carLicenseFee"/>
+        <result property="comInsurance" column="comInsurance"/>
+        <result property="purchaseTax" column="purchaseTax"/>
+        <result property="serviceCharge" column="serviceCharge"/>
+        <result property="gpsFee" column="gpsFee"/>
+        <result property="shopProtectedDetail" column="shopProtectedDetail"/>
+        <result property="collectionTime" column="collectionTime"/>
+        <result property="status" column="status"/>
+        <result property="shopNo" column="shopNo"/>
+        <result property="discount" column="discount"/>
+        <result property="amount" column="amount"/>
+        <result property="totalMoney" column="totalMoney"/>
+    </resultMap>
+    
+    <select id="selectAllPage" resultType="com.yicheejia.modules.financialmanage.entity.YcejSaleStatisticsEntity">
+    	select 
+			o.id id ,
+			o.order_no orderNo,
+			o.customer_name customerName,
+			o.sell_price sellPrice,
+			<!-- 购买方式 -->
+			(select sys.value from sys_dict sys where sys.type='pay_way' and sys.code = o.sell_type) sellType,
+			(select bb.car_model from ycej_car_model bb where bb.car_model_id = o.car_model_id) carModel,
+			(select s.shop_name from ycej_shop s where s.shop_id = o.shop_id) belongShop,
+			(select s.shop_no from ycej_shop s where s.shop_id = o.shop_id) shopNo,
+			(select sys.value from sys_dict sys where sys.type = 'pay_status' and sys.code = o.status) status,
+			<!-- 定金支付方式 -->
+			t.pay_method collectionType,
+			<!-- 定金 -->
+			t.amount appointMoney,
+			<!-- 定金支付时间 -->
+			t.pay_date saleTime,
+			<!-- 首付款金额 -->
+			t1.amount downPayment,
+			<!-- 首付款支付时间 -->
+			t1.pay_date downPayDate,
+			<!-- 首付款支付方式 -->
+			t1.pay_method downPayMethod,
+			<!-- 尾款金额 -->
+			IFNULL(t2.amount,0) finalPayment,
+			<!-- 尾款金额 -->
+			IFNULL(t2.pay_amount,0) finalPayment,
+			<!-- 尾款支付时间 -->
+			t2.pay_date finalPayDate,
+			<!-- 尾款支付方式 -->
+			t2.pay_method finalPayMethod,
+			<!-- 上牌费 -->
+			i.carLicenseFee carLicenseFee,
+			<!-- 商业外出 -->
+			i.comInsurance comInsurance,
+			<!-- 保险 -->
+			i.insurance insurance,
+			<!-- 代缴购置税 -->
+			i.purchaseTax purchaseTax,
+			<!-- 续保押金 -->
+			i.renewDeposit renewDeposit,
+			<!-- 交强外出 -->
+			i.trafficInsurance trafficInsurance,
+			<!-- 产品方案 -->
+			n.product_solution_name financialPro,
+			<!-- 裸车贷款金额 -->
+			IFNULL(n.car_pay_amount,0) - IFNULL(n.first_pay_amount,0) AS loanAmount,
+			<!-- 贷款服务费 -->
+			n.service_amount serviceCharge,
+			<!-- 贷款保险 -->
+			IFNULL(n.traffic_liability_insurance,0) + IFNULL(n.commerce_insurance,0)+ IFNULL(n.vavt,0) AS loanInsureAmount,
+			<!-- 交强险保费 -->
+			n.traffic_liability_insurance loanTrafficLiabilityInsurance,
+			<!-- 商业险保费 -->
+			n.commerce_insurance loanCommerceInsurance,
+			<!-- 融资期限 -->
+			n.finance_time loanFinanceTime,
+			<!-- 车船税 -->
+			n.vavt loanVavt,
+			<!-- 加装费 -->
+			n.installation_fee loanInstallationFee,
+			IFNULL(nn.deduction_price,0) discount,
+			n.gps_fee gpsFee,
+			<!-- 合计 -->
+			(IFNULL(i.carLicenseFee,0)+IFNULL(t2.pay_amount,0)+IFNULL(i.purchaseTax,0)+IFNULL(i.insurance,0)+IFNULL(t1.amount,0)+IFNULL(i.renewDeposit,0))totalMoney,
+			<!-- 实收金额 -->
+			(IFNULL(i.carLicenseFee,0)+IFNULL(t2.pay_amount,0)+IFNULL(i.purchaseTax,0)+IFNULL(i.insurance,0)+IFNULL(t1.amount,0)+IFNULL(i.renewDeposit,0)-IFNULL(nn.deduction_price,0)) amount
+			
+			from ycej_order o
+			LEFT JOIN (select d9.order_no order_no, d.value pay_method,d9.amount amount,d9.pay_date pay_date from ycej_order_detail d9,sys_dict d where d9.pay_type=01 and d9.pay_statu='3' and d9.pay_method = d.code and d.type = 'PayMethod') t on t.order_no = o.order_no
+			LEFT JOIN (select d.order_no order_no, s.value pay_method,d.amount amount,d.pay_date pay_date from ycej_order_detail d,sys_dict s where d.pay_type = 02 and d.pay_statu = '3' and d.pay_method = s.code and s.type = 'PayMethod') t1 on t1.order_no = o.order_no
+			left join (select  h.order_no order_no,sum(purchaseTax) purchaseTax,sum(insurance) insurance,sum(comInsurance) comInsurance,sum(renewDeposit) renewDeposit,sum(carLicenseFee) carLicenseFee,sum(trafficInsurance) trafficInsurance from (
+							select a.order_no order_no,a.amount purchaseTax,0 as insurance ,0 comInsurance,0 renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail a 
+									where a.pay_type = 05
+					union all
+							select b.order_no order_no, 0 as purchaseTax,b.amount insurance,0 comInsurance,0 renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail b
+									where b.pay_type = 11
+					union all
+							select c.order_no order_no, 0 purchaseTax,0 insurance,c.amount comInsurance,0 renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail c
+											where c.pay_type = 07
+					union all
+							select d.order_no order_no, 0 purchaseTax,0 insurance,0 comInsurance,d.amount renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail d
+											where d.pay_type = 06
+					union all
+							select e.order_no order_no, 0 purchaseTax,0 insurance,0 comInsurance,0 renewDeposit,e.amount carLicenseFee,0 trafficInsurance from ycej_order_detail e
+											where e.pay_type = 03
+					union all
+							select f.order_no order_no, 0 purchaseTax,0 insurance,0 comInsurance,0 renewDeposit,0 carLicenseFee,f.amount trafficInsurance from ycej_order_detail f
+											where f.pay_type = 08
+		
+					) h group by h.order_no) i on i.order_no = o.order_no
+			LEFT JOIN (select d.order_no order_no, s.value pay_method,d.amount amount,d.pay_amount pay_amount,d.pay_date pay_date from ycej_order_detail d,sys_dict s where d.pay_type = 04 and d.pay_statu = '3' and d.pay_method = s.code and s.type = 'PayMethod') t2 on t2.order_no = o.order_no
+			LEFT JOIN (select l.order_id order_id,p.product_solution_name product_solution_name,l.car_pay_amount car_pay_amount,l.first_pay_amount first_pay_amount,l.service_amount service_amount,l.gps_fee gps_fee,l.installation_fee installation_fee,l.purchase_tax purchase_tax,l.vavt vavt,l.traffic_liability_insurance traffic_liability_insurance,l.commerce_insurance commerce_insurance,l.finance_time finance_time from ycej_loan_info l,ycej_product_info p where l.product_solution_id = p.product_solution_id order by l.create_time desc limit 1) n on n.order_id = o.id
+		    LEFT JOIN(select m.order_id order_id,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m GROUP BY m.order_id ) nn on nn.order_id = o.id
+		    <where>
+				1=1
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and t.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and t.pay_date &lt;= #{endSaleDate}
+			</if>
+		</where>
+		
+		order by o.update_time desc
+    </select>
+<!--     <select id="selectAllPage" resultMap="ycejSaleStatisticsMap">
+    	select o.id id,
+			o.order_no order_no,
+			(select s.shop_name from ycej_shop s where s.shop_id = o.shop_id) belongShop,
+			o.customer_name customer_name,
+			d9.pay_date  saleTime,
+			(select bb.car_model from ycej_car_model bb where bb.car_model_id = o.car_model_id) carModel,
+			(select sys.value from sys_dict sys where sys.type='pay_way' and sys.code = o.sell_type) sell_type,
+			t.financialPro financialPro,
+			o.sell_price sell_price,
+			i.appointMoney	appointMoney,
+			i.downPayment downPayment,
+			i.finalPayment finalPayment,
+			i.renewDeposit renewDeposit,
+			i.carLicenseFee carLicenseFee,
+			x1.commerce_insurance comInsurance,
+			x3.purchase_tax purchaseTax,
+			(select j.service_amount from ycej_loan_info j where j.order_id=o.id) serviceCharge,
+			(select j.gps_fee from ycej_loan_info j where j.order_id=o.id) gpsFee,
+			v.value shopProtectedDetail,
+			(select sys.value from sys_dict sys where sys.type = 'pay_status' and sys.code = o.status) status,
+			m1.pay_date collectionTime,
+			m1.pay_type collectionType
+ 		from ycej_order o
+			left join ycej_order_detail d9 on d9.pay_type=01 and d9.order_no=o.order_no and d9.pay_statu='3'
+			left join (select i.order_id order_id,p.product_solution_name financialPro from ycej_loan_info i,ycej_product_info p where i.product_solution_id= p.product_solution_id) t  on o.id = t.order_id
+			left join (select  h.order_no order_no,sum(appointMoney) appointMoney,sum(downPayment) downPayment,sum(finalPayment) finalPayment,sum(renewDeposit) renewDeposit,sum(carLicenseFee) carLicenseFee from (
+					select a.order_no order_no,a.pay_amount appointMoney,0 as downPayment ,0 finalPayment,0 renewDeposit,0 carLicenseFee from ycej_order_detail a 
+							where a.pay_type = 01
+			union all
+					select b.order_no order_no, 0 as appointMoney,b.pay_amount downPayment,0 finalPayment,0 renewDeposit,0 carLicenseFee from ycej_order_detail b
+							where b.pay_type = 02
+			union all
+					select c.order_no order_no, 0 appointMoney,0 downPayment,c.pay_amount finalPayment,0 renewDeposit,0 carLicenseFee from ycej_order_detail c
+									where c.pay_type = 04
+			union all
+					select d.order_no order_no, 0 appointMoney,0 downPayment,0 finalPayment,d.pay_amount renewDeposit,0 carLicenseFee from ycej_order_detail d
+									where d.pay_type = 06
+			union all
+					select e.order_no order_no, 0 appointMoney,0 downPayment,0 finalPayment,0 renewDeposit,e.pay_amount carLicenseFee from ycej_order_detail e
+									where e.pay_type = 03
+
+			) h group by h.order_no) i on i.order_no = o.order_no
+			left JOIN (select o1.id order_id, d5.pay_amount commerce_insurance from ycej_order_detail d5,ycej_order o1 where d5.pay_type = 07 and o1.order_no = d5.order_no) x1 on x1.order_id = o.id
+			left JOIN  (select o2.id order_id, d6.pay_amount purchase_tax from ycej_order_detail d6,ycej_order o2 where d6.pay_type = 05 and o2.order_no = d6.order_no) x3 on x3.order_id = o.id
+			LEFT JOIN (select MAX(IFNULL(pay_date,0)) pay_date, MAX(IFNULL(pay_type,0)) pay_type,order_no from (
+				select d10.pay_date pay_date,d10.order_no order_no,di.value pay_type from ycej_order_detail d10,sys_dict di where d10.pay_type=02 and d10.pay_statu='3' and di.code = d10.pay_method and di.type='PayMethod'
+					union ALL
+				select d11.pay_date pay_date,d11.order_no order_no,dc.value pay_type from ycej_order_detail d11,sys_dict dc where d11.pay_type=04 and d11.pay_statu='3' and dc.code = d11.pay_method and dc.type='PayMethod'
+					) m	GROUP BY order_no) m1 
+				on m1.order_no = o.order_no
+			LEFT JOIN (select n.inventory_id inventory_id,dic.value value from sys_dict dic,ycej_inventory n where n.dinsurance = dic.code and dic.type='store_info') v	on v.inventory_id=o.inventory_id
+		<where>
+				1=1
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and d9.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and d9.pay_date &lt;= #{endSaleDate}
+			</if>
+		</where>
+		
+		order by o.update_time desc
+    </select> -->
+	
+	<!-- 导出 -->
+	<select id="selectExportData" resultType="com.yicheejia.modules.financialmanage.entity.YcejSaleStatisticsEntity">
+		select 
+			o.id id ,
+			o.order_no orderNo,
+			o.customer_name customerName,
+			o.sell_price sellPrice,
+			<!-- 购买方式 -->
+			(select sys.value from sys_dict sys where sys.type='pay_way' and sys.code = o.sell_type) sellType,
+			(select bb.car_model from ycej_car_model bb where bb.car_model_id = o.car_model_id) carModel,
+			(select s.shop_name from ycej_shop s where s.shop_id = o.shop_id) belongShop,
+			(select s.shop_no from ycej_shop s where s.shop_id = o.shop_id) shopNo,
+			(select sys.value from sys_dict sys where sys.type = 'pay_status' and sys.code = o.status) status,
+			<!-- 定金支付方式 -->
+			t.pay_method collectionType,
+			<!-- 定金 -->
+			t.amount appointMoney,
+			<!-- 定金支付时间 -->
+			t.pay_date saleTime,
+			<!-- 首付款金额 -->
+			t1.amount downPayment,
+			<!-- 首付款支付时间 -->
+			t1.pay_date downPayDate,
+			<!-- 首付款支付方式 -->
+			t1.pay_method downPayMethod,
+			<!-- 尾款金额 -->
+			IFNULL(t2.amount,0) finalPayment,
+			<!-- 尾款支付时间 -->
+			t2.pay_date finalPayDate,
+			<!-- 尾款支付方式 -->
+			t2.pay_method finalPayMethod,
+			<!-- 上牌费 -->
+			i.carLicenseFee carLicenseFee,
+			<!-- 商业外出 -->
+			i.comInsurance comInsurance,
+			<!-- 保险 -->
+			i.insurance insurance,
+			<!-- 代缴购置税 -->
+			i.purchaseTax purchaseTax,
+			<!-- 续保押金 -->
+			i.renewDeposit renewDeposit,
+			<!-- 交强外出 -->
+			i.trafficInsurance trafficInsurance,
+			<!-- 产品方案 -->
+			n.product_solution_name financialPro,
+			<!-- 裸车贷款金额 -->
+			IFNULL(n.car_pay_amount,0) - IFNULL(n.first_pay_amount,0) AS loanAmount,
+			<!-- 贷款服务费 -->
+			n.service_amount serviceCharge,
+			<!-- 贷款保险 -->
+			IFNULL(n.traffic_liability_insurance,0) + IFNULL(n.commerce_insurance,0)+ IFNULL(n.vavt,0) AS loanInsureAmount,
+			<!-- 交强险保费 -->
+			n.traffic_liability_insurance loanTrafficLiabilityInsurance,
+			<!-- 商业险保费 -->
+			n.commerce_insurance loanCommerceInsurance,
+			<!-- 融资期限 -->
+			n.finance_time loanFinanceTime,
+			<!-- 车船税 -->
+			n.vavt loanVavt,
+			<!-- 加装费 -->
+			n.installation_fee loanInstallationFee,
+			IFNULL(nn.deduction_price,0) discount, 
+			n.gps_fee gpsFee,
+			<!-- 合计 -->
+			(IFNULL(i.carLicenseFee,0)+IFNULL(t2.pay_amount,0)+IFNULL(i.purchaseTax,0)+IFNULL(i.insurance,0)+IFNULL(t1.amount,0)+IFNULL(i.renewDeposit,0))totalMoney,
+			<!-- 实收金额 -->
+			(IFNULL(i.carLicenseFee,0)+IFNULL(t2.pay_amount,0)+IFNULL(i.purchaseTax,0)+IFNULL(i.insurance,0)+IFNULL(t1.amount,0)+IFNULL(i.renewDeposit,0)-IFNULL(nn.deduction_price,0)) amount
+			
+			from ycej_order o
+			LEFT JOIN (select d9.order_no order_no, d.value pay_method,d9.amount amount,d9.pay_date pay_date from ycej_order_detail d9,sys_dict d where d9.pay_type=01 and d9.pay_statu='3' and d9.pay_method = d.code and d.type = 'PayMethod') t on t.order_no = o.order_no
+			LEFT JOIN (select d.order_no order_no, s.value pay_method,d.amount amount,d.pay_date pay_date from ycej_order_detail d,sys_dict s where d.pay_type = 02 and d.pay_statu = '3' and d.pay_method = s.code and s.type = 'PayMethod') t1 on t1.order_no = o.order_no
+			left join (select  h.order_no order_no,sum(purchaseTax) purchaseTax,sum(insurance) insurance,sum(comInsurance) comInsurance,sum(renewDeposit) renewDeposit,sum(carLicenseFee) carLicenseFee,sum(trafficInsurance) trafficInsurance from (
+							select a.order_no order_no,a.amount purchaseTax,0 as insurance ,0 comInsurance,0 renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail a 
+									where a.pay_type = 05
+					union all
+							select b.order_no order_no, 0 as purchaseTax,b.amount insurance,0 comInsurance,0 renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail b
+									where b.pay_type = 11
+					union all
+							select c.order_no order_no, 0 purchaseTax,0 insurance,c.amount comInsurance,0 renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail c
+											where c.pay_type = 07
+					union all
+							select d.order_no order_no, 0 purchaseTax,0 insurance,0 comInsurance,d.amount renewDeposit,0 carLicenseFee,0 trafficInsurance from ycej_order_detail d
+											where d.pay_type = 06
+					union all
+							select e.order_no order_no, 0 purchaseTax,0 insurance,0 comInsurance,0 renewDeposit,e.amount carLicenseFee,0 trafficInsurance from ycej_order_detail e
+											where e.pay_type = 03
+					union all
+							select f.order_no order_no, 0 purchaseTax,0 insurance,0 comInsurance,0 renewDeposit,0 carLicenseFee,f.amount trafficInsurance from ycej_order_detail f
+											where f.pay_type = 08
+		
+					) h group by h.order_no) i on i.order_no = o.order_no
+			LEFT JOIN (select d.order_no order_no, s.value pay_method,d.amount amount,d.pay_amount pay_amount,d.pay_date pay_date from ycej_order_detail d,sys_dict s where d.pay_type = 04 and d.pay_statu = '3' and d.pay_method = s.code and s.type = 'PayMethod') t2 on t2.order_no = o.order_no
+			LEFT JOIN (select l.order_id order_id,p.product_solution_name product_solution_name,l.car_pay_amount car_pay_amount,l.first_pay_amount first_pay_amount,l.service_amount service_amount,l.gps_fee gps_fee,l.installation_fee installation_fee,l.purchase_tax purchase_tax,l.vavt vavt,l.traffic_liability_insurance traffic_liability_insurance,l.commerce_insurance commerce_insurance,l.finance_time finance_time from ycej_loan_info l,ycej_product_info p where l.product_solution_id = p.product_solution_id order by l.create_time desc limit 1) n on n.order_id = o.id
+		    LEFT JOIN(select m.order_id order_id,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m GROUP BY m.order_id ) nn on nn.order_id = o.id
+		     where 
+		    	o.id 
+			in
+				<foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    	</foreach> 
+		    order by o.update_time desc
+	</select>
+	
+	
+</mapper>

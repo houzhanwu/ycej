@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.inquiry.dao.ResourceQuotedLogDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.inquiry.entity.ResourceQuotedLogEntity" id="resourceQuotedLogMap">
+        <result property="logId" column="log_id"/>
+        <result property="offerPrice" column="offer_price"/>
+        <result property="quotedTime" column="quoted_time"/>
+        <result property="remark" column="remark"/>
+        <result property="quotedId" column="quoted_id"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateResourceQuotedLog" parameterType="com.yicheejia.modules.inquiry.entity.ResourceQuotedLogEntity" >
+		update ycej_resource_quoted_log
+		<trim prefix="set" suffixOverrides=",">
+		<if test="logId != null">  log_id = #{logId}, </if> 
+		<if test="offerPrice != null">  offer_price = #{offerPrice}, </if> 
+		<if test="quotedTime != null">  quoted_time = #{quotedTime}, </if> 
+		<if test="remark != null">  remark = #{remark}, </if> 
+		<if test="quotedId != null">  quoted_id = #{quotedId}, </if> 
+		</trim>
+		where
+    </update>
+
+
+</mapper>

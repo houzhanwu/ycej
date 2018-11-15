@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.order.dao.RepaymentDao">
+
+	<select id="queryOrderDetail" parameterType="map" resultType="com.yicheejia.modules.order.entity.RepaymentEntity">
+		SELECT 
+		  t1.order_no as orderNo,
+		  t1.pay_type as payDetail,
+		  t1.pay_amount as paySum,
+		  t1.amount AS sum,
+		  t.id
+		FROM
+		  ycej_order t,
+		  ycej_order_detail t1 
+		WHERE t1.order_no = t.order_no
+		  AND t1.pay_type NOT IN ('07','08') 
+		  AND t1.pay_statu IN( 1 ,2)
+		  AND RIGHT(t1.order_no,6 ) = #{orderNo}
+		  AND t.shop_id = #{shopId} 
+		  ORDER BY t1.pay_type
+	</select>
+	<update id="upOrderPay" parameterType="map">
+		UPDATE 
+		  ycej_order t,
+		  ycej_order_detail t1 
+		SET
+		  t1.pay_method = #{payMethod},
+		  t1.pay_date = #{payDate},
+		  t1.payCardNo = #{cardNo},
+		  t1.pay_amount =  #{payAmount},
+		  t1.pay_statu = #{payStatu},
+		  t1.update_time = NOW() 
+		WHERE t.order_no = t1.order_no
+		AND RIGHT(t1.order_no, 6) = #{orderNo} 
+		AND t1.pay_type = #{payType}
+		AND t.shop_id = #{shopId}
+	</update>
+	<select id="queryOrderPayDetail" parameterType="map" resultType="com.yicheejia.modules.order.entity.RepaymentEntity">
+		SELECT 
+		  t.id,
+		  t1.order_no AS orderNo,
+		  t1.pay_type AS payDetail,
+		  t1.amount AS sum,
+		  t1.pay_amount AS paySum,
+		  t1.paycardno AS paycardno,
+		  t1.sys_ref_no AS sysRefNo,
+		  t1.pay_statu AS payStatu
+		FROM
+		  ycej_order t,
+		  ycej_order_paydetail t1 
+		WHERE t1.order_no = t.order_no 
+		  AND t1.pay_statu IN( 1 ,2)
+		  AND t.status NOT IN ('01','02')
+		  AND RIGHT(t1.order_no,6 ) = #{orderNo} 
+		  AND t.shop_id = #{shopId} 
+		  ORDER BY t1.pay_type
+	</select>
+	<select id="queryDetail" parameterType="map" resultType="com.yicheejia.modules.order.entity.RepaymentEntity">
+		SELECT 
+		  t1.order_no AS orderNo,
+		  t1.pay_type AS payDetail,
+		  t1.amount AS sum,
+		  t1.pay_amount AS paySum,
+		  t1.paycardno AS paycardno,
+		  t1.sys_ref_no AS sysRefNo,
+		  t1.pay_statu AS payStatu,
+		  t.status
+		FROM
+		  ycej_order t,
+		  ycej_order_paydetail t1 
+		WHERE t1.order_no = t.order_no
+		  AND t.status NOT IN ('01','02')
+		   AND t1.pay_statu = 3
+		  AND RIGHT(t1.order_no,6 ) = #{orderNo} 
+		  AND t.shop_id = #{shopId} 
+		  ORDER BY t1.pay_type
+	</select>
+	<update id="upOrderPayDetail" parameterType="map">
+		UPDATE ycej_order t1,
+		       ycej_order_paydetail t
+		  SET t.pay_amount = #{payAmount},
+		      t.pay_date = #{payDate},
+		      t.pay_method = #{payMethod},
+		      t.pay_statu = #{payStatu},
+		      t.paycardno = #{cardNo},
+		      t.update_time = NOW(),
+		      t.sys_ref_no = #{sysRefNo}
+		WHERE t.order_no = t1.order_no
+			  and t.pay_statu in ('1','2')
+		      and RIGHT(t.order_no, 6) = #{orderNo} 
+		      AND t1.shop_id = #{shopId}
+		      AND t.pay_type = #{payType}
+		      
+	</update>
+	<insert id="insertOrderPay" parameterType="map">
+		INSERT INTO ycej_order_paydetail (order_no,pay_type,amount,pay_amount,pay_statu,insert_time)
+		VALUES(#{orderNo},#{payType},#{amount},#{payAmount},'2',NOW())
+	</insert>
+	<insert id="insertPay" parameterType="map">
+		INSERT INTO ycej_order_paydetail (order_no,pay_type,amount,pay_amount,pay_date,pay_method,pay_statu,paycardno,insert_time,sys_ref_no)
+		VALUES(#{orderNo},#{payType},#{amount},#{payAmount},#{payDate},#{payMethod},#{payStatu},#{cardNo},NOW(),#{sysRefNo})
+	</insert>
+	
+</mapper>

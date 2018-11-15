@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.inquiry.dao.ResourceBrandDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.inquiry.entity.ResourceBrandEntity" id="resourceBrandMap">
+        <result property="id" column="id"/>
+        <result property="resourceCustomerId" column="resource_customer_id"/>
+        <result property="carBrandId" column="car_brand_id"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateResourceBrand" parameterType="com.yicheejia.modules.inquiry.entity.ResourceBrandEntity" >
+		update ycej_resource_brand
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="resourceCustomerId != null">  resource_customer_id = #{resourceCustomerId}, </if> 
+		<if test="carBrandId != null">  car_brand_id = #{carBrandId}, </if> 
+		</trim>
+		where
+    </update>
+	
+	<select id="getResourceBrands" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+			t.car_brand_id AS value,
+			d.car_brand AS name
+
+		FROM
+			ycej_resource_brand t
+			LEFT JOIN ycej_car_brand d ON t.car_brand_id = d.car_brand_id
+		WHERE
+			t.resource_customer_id = #{resourceCustomerId}
+	</select>
+
+</mapper>

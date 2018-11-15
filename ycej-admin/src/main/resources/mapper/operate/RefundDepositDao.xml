@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.RefundDepositDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.RefundDepositEntity" id="refundDepositMap">
+        <result property="id" column="id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="depositPayId" column="deposit_pay_id"/>
+        <result property="handleFile" column="handle_file"/>
+        <result property="handleTime" column="handle_time"/>
+        <result property="receiveUser" column="receive_user"/>
+        <result property="isRefund" column="is_refund"/>
+        <result property="refundTime" column="refund_time"/>
+        <result property="isBack" column="is_back"/>
+        <result property="backTime" column="back_time"/>
+        <result property="backCarCount" column="back_car_count"/>
+        <result property="receiveTime" column="receive_time"/>
+        <result property="receiveAmount" column="receive_amount"/>
+        <result property="receiveSerialNum" column="receive_serial_num"/>
+        <result property="refundState" column="refund_state"/>
+        <result property="remark" column="remark"/>
+        <result property="comment" column="comment"/>
+        <result property="insertUser" column="insert_user"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateRefundDeposit" parameterType="com.yicheejia.modules.operate.entity.RefundDepositEntity" >
+		update ycej_refund_deposit
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="depositPayId != null">  deposit_pay_id = #{depositPayId}, </if> 
+		<if test="handleFile != null">  handle_file = #{handleFile}, </if> 
+		<if test="handleTime != null">  handle_time = #{handleTime}, </if> 
+		<if test="receiveUser != null">  receive_user = #{receiveUser}, </if> 
+		<if test="isRefund != null">  is_refund = #{isRefund}, </if> 
+		<if test="refundTime != null">  refund_time = #{refundTime}, </if> 
+		<if test="isBack != null">  is_back = #{isBack}, </if> 
+		<if test="backTime != null">  back_time = #{backTime}, </if> 
+		<if test="backCarCount != null">  back_car_count = #{backCarCount}, </if> 
+		<if test="receiveTime != null">  receive_time = #{receiveTime}, </if> 
+		<if test="receiveAmount != null">  receive_amount = #{receiveAmount}, </if> 
+		<if test="receiveSerialNum != null">  receive_serial_num = #{receiveSerialNum}, </if> 
+		<if test="refundState != null">  refund_state = #{refundState}, </if> 
+		<if test="remark != null">  remark = #{remark}, </if> 
+		<if test="comment != null">  comment = #{comment}, </if> 
+		<if test="insertUser != null">  insert_user = #{insertUser}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="updateUser != null">  update_user = #{updateUser}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		</trim>
+		where
+    </update>
+	<select id="selectAllPage" resultType="com.yicheejia.modules.operate.entity.RefundDepositEntity">
+		SELECT
+			r.id id,
+			s.supplier_name supplierName,
+			s.supplier_type supplierType,
+			s.vehicle_type carType,
+			s.all_caution depositMoney,
+			s.car_number belowCar,
+			r.refund_state refundState
+		FROM
+			ycej_refund_deposit r
+		LEFT JOIN ycej_caution_money s ON s.caution_id = r.deposit_pay_id
+	</select>
+</mapper>

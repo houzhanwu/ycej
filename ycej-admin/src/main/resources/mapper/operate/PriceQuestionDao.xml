@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.PriceQuestionDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.PriceQuestionEntity" id="priceQuestionMap">
+        <result property="id" column="id"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="questioner" column="questioner"/>
+        <result property="questionTime" column="question_time"/>
+        <result property="customer" column="customer"/>
+        <result property="phone" column="phone"/>
+        <result property="question" column="question"/>
+        <result property="replier" column="replier"/>
+        <result property="replyTime" column="reply_time"/>
+        <result property="priceFrom" column="price_from"/>
+        <result property="reply" column="reply"/>
+    </resultMap>
+    <select id="selectAllPage" resultType="com.yicheejia.modules.operate.entity.PriceQuestionEntity">
+    	select p.id id,s.shop_name shopId,p.questioner questioner,p.question_time questionTime,
+				p.customer customer,p.phone phone,p.question question,p.replier replier,p.reply_time replyTime,
+				p.price_from priceFrom,p.reply reply
+		from ycej_price_question p
+			LEFT JOIN ycej_shop s on p.shop_id = s.shop_id
+		<where>
+			1=1
+			<if test="question!=null and question!=''">
+				and p.question like "%"#{question}"%"
+			</if>
+		</where>
+		order by question_time desc
+    </select>
+
+</mapper>

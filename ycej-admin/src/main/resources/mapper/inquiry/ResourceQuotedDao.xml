@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.inquiry.dao.ResourceQuotedDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.inquiry.entity.ResourceQuotedEntity" id="resourceQuotedMap">
+        <result property="quotedId" column="quoted_id"/>
+        <result property="carBrandId" column="car_brand_id"/>
+        <result property="carBrand" column="car_brand"/>
+        <result property="carManufacturerId" column="car_manufacturer_id"/>
+        <result property="carManufacturer" column="car_manufacturer"/>
+        <result property="carSeriesId" column="car_series_id"/>
+        <result property="carSeries" column="car_series"/>
+        <result property="carModelId" column="car_model_id"/>
+        <result property="carModel" column="car_model"/>
+        <result property="carAppearanceColor" column="car_appearance_color"/>
+        <result property="carEmissions" column="car_emissions"/>
+        <result property="offerPrice" column="offer_price"/>
+        <result property="resourceName" column="resource_name"/>
+        <result property="quotedTime" column="quoted_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateResourceQuotedById" parameterType="com.yicheejia.modules.inquiry.entity.ResourceQuotedEntity" >
+		update ycej_resource_quoted
+		<trim prefix="set" suffixOverrides=",">
+		<if test="quotedId != null">  quoted_id = #{quotedId}, </if> 
+		<if test="carBrandId != null">  car_brand_id = #{carBrandId}, </if> 
+		<if test="carBrand != null">  car_brand = #{carBrand}, </if> 
+		<if test="carManufacturerId != null">  car_manufacturer_id = #{carManufacturerId}, </if> 
+		<if test="carManufacturer != null">  car_manufacturer = #{carManufacturer}, </if> 
+		<if test="carSeriesId != null">  car_series_id = #{carSeriesId}, </if> 
+		<if test="carSeries != null">  car_series = #{carSeries}, </if> 
+		<if test="carModelId != null">  car_model_id = #{carModelId}, </if> 
+		<if test="carModel != null">  car_model = #{carModel}, </if> 
+		<if test="carAppearanceColor != null">  car_appearance_color = #{carAppearanceColor}, </if> 
+		<if test="carEmissions != null">  car_emissions = #{carEmissions}, </if> 
+		<if test="offerPrice != null">  offer_price = #{offerPrice}, </if> 
+		<if test="resourceName != null">  resource_name = #{resourceName}, </if> 
+		<if test="quotedTime != null">  quoted_time = #{quotedTime}, </if> 
+
+		<if test="remark != null">  remark = #{remark}, </if> 
+		</trim>
+		where quoted_id = #{quotedId}
+    </update>
+
+	<select id="getQuotedList" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT
+		t.quoted_id AS quotedId,
+		t.car_brand_id AS carBrandId,
+		t.car_manufacturer_id AS carManufacturerId,
+		t.car_series_id AS carSeriesId,
+		t.car_emissions AS carEmissions,
+		t.car_model_id AS carModelId,
+		t.offer_price AS offerPrice,
+		t.quoted_time AS quotedTime,
+		t.remark AS remark,
+		t.resource_id AS resourceId,
+		u.resource_name AS resourceName,
+		t.car_appearance_color AS carAppearanceColor,
+		b.car_brand AS carBrand,
+		m.car_manufacturer as carManufacturer,
+		s.car_series AS carSeries,
+		d.car_model AS carModel,
+		r.color AS color
+		FROM
+		ycej_resource_quoted t
+		LEFT JOIN ycej_car_brand b ON t.car_brand_id = b.car_brand_id
+		LEFT JOIN ycej_car_manufacturer m ON t.car_manufacturer_id = m.car_manufacturer_id
+		LEFT JOIN ycej_car_series s ON t.car_series_id = s.car_series_id
+		LEFT JOIN ycej_car_model d ON t.car_model_id = d.car_model_id
+		LEFT JOIN ycej_car_color r ON t.car_appearance_color = r.id
+        LEFT JOIN ycej_resource_customer u on t.resource_id = u.resource_id
+		WHERE 1=1
+		<if test="quotedTime != null and quotedTime != ''">
+			and date(t.quoted_time) = #{quotedTime}
+		</if>
+		<if test="resourceId != null and resourceId != ''">
+			and t.resource_id = #{resourceId}
+		</if>
+		<if test="carModel != null and carModel != ''">
+			and d.car_model like '%${carModel}%'
+		</if>
+		order by t.quoted_time desc
+	</select>
+	
+
+
+</mapper>

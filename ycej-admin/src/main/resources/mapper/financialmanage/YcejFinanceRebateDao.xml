@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.YcejFinanceRebateDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.YcejFinanceRebateEntity" id="ycejFinanceRebateMap">
+        <result property="id" column="id"/>
+        <result property="order_no" column="order_no"/>
+        <result property="area" column="area"/>
+        <result property="shopId" column="shopId"/>
+        <result property="customerName" column="customerName"/>
+        <result property="modelId" column="modelId"/>
+        <result property="payWay" column="payWay"/>
+        <result property="insurance" column="insurance"/>
+        <result property="vehicle_vessel_tax" column="vehicle_vessel_tax"/>
+        <result property="comInsurance" column="comInsurance"/>
+        <result property="after_tax_insurance" column="after_tax_insurance"/>
+        <result property="insurance_rebate" column="insurance_rebate"/>
+        <result property="product_rebate" column="product_rebate"/>
+        <result property="service_rebate" column="service_rebate"/>
+        <result property="gps_rebate" column="gps_rebate"/>
+        <result property="partner_rebate" column="partner_rebate"/>
+        <result property="shopAttr" column="shopAttr"/>
+        <result property="allCharge" column="allCharge"/>
+        <result property="financingDate" column="financingDate"/>
+        <result property="gpsFee" column="gpsFee"/>
+        <result property="productId" column="productId"/>
+        <result property="serviceCharge" column="serviceCharge"/>
+    </resultMap>
+	
+	<select id="selectAllPage" resultMap="ycejFinanceRebateMap">
+		select 
+			o.id id,
+			o.order_no order_no,
+			<!-- s.district_name area, -->
+			s.shop_name shopId,
+			<!-- 门店属性 -->
+			s.shop_attr shopAttr,
+			o.customer_name customerName,
+			b.car_model modelId,
+			sys.value payWay,
+			<!-- 服务费 -->
+			IFNULL(j.service_amount,0) serviceCharge,
+			<!-- GPS费用 -->
+			IFNULL(j.gps_fee,0) gpsFee,
+			<!-- 融资期限 -->
+			j.finance_time financingDate,
+			<!-- 产品方案id -->
+			j.product_solution_id productId,
+			<!-- 车船税 -->
+			IFNULL(j.vavt,0) vehicle_vessel_tax,
+			<!-- 商业险 -->
+			IFNULL(m1.commerce_insurance,0) comInsurance,
+			<!-- 融资总额 -->
+			(IFNULL(j.car_pay_amount,0)-IFNULL(j.first_pay_amount,0)+IFNULL(j.service_amount,0)+IFNULL(j.gps_fee,0)+IFNULL(j.traffic_liability_insurance,0)
+				+IFNULL(j.commerce_insurance,0)+IFNULL(j.vavt,0)+IFNULL(j.purchase_tax,0)+IFNULL(j.installation_fee,0)) allCharge
+		from 
+			ycej_order o
+		left join ycej_shop s on s.shop_id=o.shop_id
+		<!-- 车型 -->
+		LEFT JOIN ycej_car_model b on b.car_model_id = o.car_model_id
+		<!-- 服务费、GPS费用 -->
+		left JOIN ycej_loan_info j on j.order_id = o.id
+		<!-- 购买方式 -->
+		left join sys_dict sys on o.sell_type = sys.code and sys.type = 'pay_way'
+		<!-- 商业险 -->
+		left JOIN (select m.order_id order_id,MAX(IFNULL(m.commerce_insurance,0)) commerce_insurance from (select o1.id order_id, d5.pay_amount commerce_insurance from ycej_order_detail d5,ycej_order o1 where d5.pay_type = 07 and o1.order_no = d5.order_no 
+											union all
+									select order_id ,commerce_insurance from ycej_loan_info 
+									) m GROUP BY m.order_id) m1 on m1.order_id = o.id
+		<where>
+				1=1
+			<if test="customerName!=null and customerName!=''">
+				and o.customer_name LIKE CONCAT(CONCAT('%',#{customerName},'%')) 
+			</if>
+			and o.status = '11'
+		</where>
+		order by order_no desc
+	</select>
+	<select  id="selectExportData" resultMap="ycejFinanceRebateMap">
+		select 
+			o.id id,
+			o.order_no order_no,
+			<!-- s.district_name area, -->
+			s.shop_name shopId,
+			<!-- 门店属性 -->
+			s.shop_attr shopAttr,
+			o.customer_name customerName,
+			b.car_model modelId,
+			sys.value payWay,
+			<!-- 服务费 -->
+			IFNULL(j.service_amount,0) serviceCharge,
+			<!-- GPS费用 -->
+			IFNULL(j.gps_fee,0) gpsFee,
+			<!-- 融资期限 -->
+			j.finance_time financingDate,
+			<!-- 产品方案id -->
+			j.product_solution_id productId,
+			<!-- 车船税 -->
+			IFNULL(j.vavt,0) vehicle_vessel_tax,
+			<!-- 商业险 -->
+			IFNULL(m1.commerce_insurance,0) comInsurance,
+			<!-- 融资总额 -->
+			(IFNULL(j.car_pay_amount,0)-IFNULL(j.first_pay_amount,0)+IFNULL(j.service_amount,0)+IFNULL(j.gps_fee,0)+IFNULL(j.traffic_liability_insurance,0)
+				+IFNULL(j.commerce_insurance,0)+IFNULL(j.vavt,0)+IFNULL(j.purchase_tax,0)+IFNULL(j.installation_fee,0)) allCharge
+		from 
+			ycej_order o
+		left join ycej_shop s on s.shop_id=o.shop_id
+		<!-- 车型 -->
+		LEFT JOIN ycej_car_model b on b.car_model_id = o.car_model_id
+		<!-- 服务费、GPS费用 -->
+		left JOIN ycej_loan_info j on j.order_id = o.id
+		<!-- 购买方式 -->
+		left join sys_dict sys on o.sell_type = sys.code and sys.type = 'pay_way'
+		<!-- 商业险 -->
+		left JOIN (select m.order_id order_id,MAX(IFNULL(m.commerce_insurance,0)) commerce_insurance from (select o1.id order_id, d5.pay_amount commerce_insurance from ycej_order_detail d5,ycej_order o1 where d5.pay_type = 07 and o1.order_no = d5.order_no 
+											union all
+									select order_id ,commerce_insurance from ycej_loan_info 
+									) m GROUP BY m.order_id) m1 on m1.order_id = o.id
+		where 
+		    	o.id 
+			in
+				<foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    	</foreach> 
+		order by order_no desc
+	</select>
+		
+	<select  id="selectAllShopPage" resultMap="ycejFinanceRebateMap">
+		select 
+			o.id id,
+			o.order_no order_no,
+			<!-- s.district_name area, -->
+			s.shop_name shopId,
+			<!-- 门店属性 -->
+			s.shop_attr shopAttr,
+			o.customer_name customerName,
+			b.car_model modelId,
+			sys.value payWay,
+			<!-- 服务费 -->
+			IFNULL(j.service_amount,0) serviceCharge,
+			<!-- GPS费用 -->
+			IFNULL(j.gps_fee,0) gpsFee,
+			<!-- 融资期限 -->
+			j.finance_time financingDate,
+			<!-- 产品方案id -->
+			j.product_solution_id productId,
+			<!-- 车船税 -->
+			IFNULL(j.vavt,0) vehicle_vessel_tax,
+			<!-- 商业险 -->
+			IFNULL(m1.commerce_insurance,0) comInsurance,
+			<!-- 融资总额 -->
+			(IFNULL(j.car_pay_amount,0)-IFNULL(j.first_pay_amount,0)+IFNULL(j.service_amount,0)+IFNULL(j.gps_fee,0)+IFNULL(j.traffic_liability_insurance,0)
+				+IFNULL(j.commerce_insurance,0)+IFNULL(j.vavt,0)+IFNULL(j.purchase_tax,0)+IFNULL(j.installation_fee,0)) allCharge
+		from 
+			ycej_order o
+		left join ycej_shop s on s.shop_id=o.shop_id
+		<!-- 车型 -->
+		LEFT JOIN ycej_car_model b on b.car_model_id = o.car_model_id
+		<!-- 服务费、GPS费用 -->
+		left JOIN ycej_loan_info j on j.order_id = o.id
+		<!-- 购买方式 -->
+		left join sys_dict sys on o.sell_type = sys.code and sys.type = 'pay_way'
+		<!-- 商业险 -->
+		left JOIN (select m.order_id order_id,MAX(IFNULL(m.commerce_insurance,0)) commerce_insurance from (select o1.id order_id, d5.pay_amount commerce_insurance from ycej_order_detail d5,ycej_order o1 where d5.pay_type = 07 and o1.order_no = d5.order_no 
+											union all
+									select order_id ,commerce_insurance from ycej_loan_info 
+									) m GROUP BY m.order_id) m1 on m1.order_id = o.id
+		<where>
+				1=1
+			<if test="customerName!=null and customerName!=''">
+				and o.customer_name LIKE CONCAT(CONCAT('%',#{customerName},'%')) 
+			</if>
+			<if test="filterFlag == 1">
+		        AND o.shop_id
+		        <choose>
+		            <when test="shop_id_list != null and shop_id_list.size() > 0">
+		                in
+		                <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+		                    #{shopId}
+		                </foreach>
+		            </when>
+		            <otherwise>
+		                is null
+		            </otherwise>
+		        </choose>
+		    </if>
+			and o.status = '11'
+		</where>
+		order by order_no desc
+	</select>
+</mapper>

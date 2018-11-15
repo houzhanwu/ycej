@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.sys.dao.SysDictDao">
+
+    <select id="queryStates"  resultType="java.util.Map">
+        select code,value from sys_dict where type = #{type}
+    </select>
+    <select id="queryValue"  resultType="com.yicheejia.modules.sys.entity.SysDictEntity" parameterType="map">
+        select name,type,code,value,order_num as orderNum, remark from sys_dict where 1=1 
+        <if test="type !=null and type !=''">
+          and type = #{type}
+        </if>
+        <if test="code !=null and code !=''">
+          and code = #{code}
+        </if>
+        order by type
+    </select>
+
+</mapper>

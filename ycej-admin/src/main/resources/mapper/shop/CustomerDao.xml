@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.shop.dao.CustomerDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.shop.entity.CustomerEntity" id="customerMap">
+        <result property="customerId" column="customer_id"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="customerTel" column="customer_tel"/>
+        <result property="cardNo" column="card_no"/>
+        <result property="carType" column="car_type"/>
+        <result property="buyDate" column="buy_date"/>
+        <result property="carColor" column="car_color"/>
+        <result property="buyManner" column="buy_manner"/>
+        <result property="handoverTime" column="handover_time"/>
+        <result property="handoverShop" column="handover_shop"/>
+        <result property="insuranceSum" column="insurance_sum"/>
+        <result property="insuranceDate" column="insurance_date"/>
+        <result property="insuranceDiposit" column="insurance_diposit"/>
+        <result property="instalmentYear" column="instalment_year"/>
+        <result property="insTime" column="ins_time"/>
+        <result property="insUser" column="ins_user"/>
+        <result property="updTime" column="upd_time"/>
+        <result property="updUser" column="upd_user"/>
+        <result property="remark" column="remark"/>
+        <result property="shopId" column="shop_id"/>
+    </resultMap>
+
+    <sql id="cusManageSql">
+        SELECT
+            u.customer_id AS customerId,
+            u.customer_name AS customerName,
+            u.customer_tel AS customerTel,
+            u.card_no AS cardNo,
+            u.car_type AS carType,
+            u.buy_date AS buyDate,
+            u.car_color AS carColor,
+            u.buy_manner AS buyManner,
+            u.handover_time AS handoverTime,
+            u.handover_shop AS handoverShop,
+            u.insurance_sum AS insuranceSum,
+            u.insurance_date AS insuranceDate,
+            u.insurance_diposit AS insuranceDiposit,
+            u.instalment_year AS instalmentYear,
+            u.ins_time AS insTime,
+            u.ins_user AS insUser,
+            u.upd_time AS updTime,
+            u.upd_user AS updUser,
+            u.remark,
+            u.shop_id AS shopId,
+            u.customer_state AS customerState,
+            d.risk_mng_rst as riskMngRst,
+            d.traffic_liability_insurance as trafficLiabilityInsurance,
+            d.commerce_insurance as commerceInsurance,
+            d.installation_fee as installationFee,
+            d.purchase_tax as purchaseTax,
+            d.vavt as vavt,
+            d.service_amount as serviceAmount,
+            d.first_pay_amount as firstPayAmount,
+            d.car_pay_amount as carPayAmount,
+            d.finance_time as financeTime,
+            d.gps_fee as gpsFee
+        FROM
+            ycej_customer u
+            LEFT JOIN (
+                          SELECT
+                              a.loan_info_id,
+                              a.customer_name,
+                              a.id_no,
+                              a.risk_mng_rst,
+                              a.create_time,
+                              a.traffic_liability_insurance,
+                              a.commerce_insurance,
+                              a.finance_time,
+                              a.car_pay_amount,
+                              a.first_pay_amount,
+                              a.service_amount,
+                              a.vavt,
+                              a.purchase_tax,
+                              a.installation_fee,
+                              a.gps_fee
+
+                          FROM
+                              ycej_loan_info a,
+                              (
+                                  SELECT
+                                      max(create_time) create_time,
+                                      b.id_no
+                                  FROM
+                                      ycej_loan_info b
+                                  GROUP BY
+                                      b.id_no
+                              ) c
+                          WHERE
+                              a.id_no = c.id_no
+                              AND a.create_time = c.create_time
+                      ) d ON u.card_no = d.id_no where 1=1
+    </sql>
+
+    <select id="customerManageListPage" parameterType="java.util.Map" resultType="java.util.Map">
+        <include refid="cusManageSql"></include>
+        and (u.customer_state != 1 or u.customer_state is null)
+        <if test="customerName != null and customerName != ''">
+            and (u.customer_name like '%${customerName}%' or u.customer_tel like '%${customerName}%'
+            or u.card_no like '%${customerName}%')
+        </if>
+          ORDER BY u.ins_time DESC
+    </select>
+
+    <select id="getCusManageInfoById" resultType="java.util.Map">
+        <include refid="cusManageSql"></include>
+            and u.customer_id = #{customerId}
+    </select>
+
+    <select id="getCustomerInfoById" resultType="java.util.Map">
+        <include refid="cusManageSql"></include>
+          and u.customer_id = #{customerId}
+    </select>
+
+    
+	<update id="updateCustomer" parameterType="com.yicheejia.modules.shop.entity.CustomerEntity">
+			update ycej_customer
+			<trim prefix="set" suffixOverrides=",">
+				 customer_state = 1, 
+				 upd_user = #{updUser},
+				 upd_time = NOW(),
+				 car_type = #{carType},
+				 buy_date = #{buyDate},
+				 car_color = #{carColor},
+				 buy_manner = #{buyManner},
+				 handover_time = #{handoverTime},
+				 handover_shop = #{handoverShop},
+				 shop_id = #{shopId}
+			</trim>
+			<where>card_no = #{cardNo}</where>
+	</update>
+
+    <update id="updateCustomerByCardNo" parameterType="com.yicheejia.modules.shop.entity.CustomerEntity">
+        update ycej_customer
+        <trim prefix="set" suffixOverrides=",">
+            customer_name = #{customerName},
+            customer_tel = #{customerTel},
+            car_type = #{carType},
+            upd_time = NOW()
+        </trim>
+        <where>card_no = #{cardNo}</where>
+    </update>
+	<select id="selectCustByCard" parameterType="map" resultType="com.yicheejia.modules.shop.entity.CustomerEntity">
+	  SELECT
+	    u.shop_id AS shopId,
+	    u.customer_id AS customerId,
+	    u.customer_name AS customerName,
+	    u.customer_tel AS customerTel,
+	    u.card_no AS cardNo,
+	    u.car_type AS carType
+	    FROM
+	  ycej_customer u WHERE u.card_no = #{cardNo} and (u.customer_state IS NULL  OR u.customer_state != 1)
+	</select>
+</mapper>

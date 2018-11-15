@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.shop.dao.IntentionCustomerDao">
+
+
+<select id="selectListPage" parameterType="java.util.Map" resultType="com.yicheejia.modules.shop.entity.IntentionCustomerEntity">
+    SELECT
+    u.shop_id AS shopId,
+    u.customer_id AS customerId,
+    s.shop_name AS shopName,
+    u.customer_name AS customerName,
+    u.customer_tel AS customerTel,
+    u.sex AS sex,
+    u.address AS address,
+    u.car_brand_name AS carBrandName,
+    u.car_firm_name AS carFirmName,
+    u.car_series_name AS carSeriesName,
+    u.car_type_name AS carTypeName,
+    u.`level` AS LEVEL,
+    u.pay_way AS payWay,
+    u.arrive_time AS arriveTime,
+    u.dealed AS dealed,
+    u.other_person AS otherPerson,
+    u.other_tel AS otherTel,
+    u.id_card_no as idCardNo,
+    tt.remark AS remark,
+    tt.trackTime AS trackDate
+    FROM
+    ycej_intention_customer u
+    LEFT JOIN ycej_shop s ON u.shop_id = s.shop_id
+    LEFT JOIN (
+    SELECT
+    tk.track_time as trackTime,
+    tk.remark as remark,
+    tk.customer_id as intentionId
+    FROM
+    ycej_customer_track tk,
+    (
+    SELECT
+    max(t.id) as id,
+    t.customer_id AS customerId,
+    max(t.track_time) AS trackTime
+    FROM
+    ycej_customer_track t
+    GROUP BY
+    t.customer_id
+    ) tm
+    WHERE
+    tk.customer_id = tm.customerId
+    AND tk.track_time = tm.trackTime and tk.id = tm.id
+    ) tt ON u.customer_id = tt.intentionId
+    WHERE
+        1 = 1 and u.intention_customer_state != 1
+    <if test="customer != null and customer != ''">
+        AND (u.customer_name like '%${customer}%' or u.customer_tel like '%${customer}%' or u.id_card_no like '%${customer}%')
+    </if>
+    <if test="filterFlag == 1">
+        AND u.shop_id
+        <choose>
+            <when test="shop_id_list != null and shop_id_list.size() > 0">
+                in
+                <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+                    #{shopId}
+                </foreach>
+            </when>
+            <otherwise>
+                is null
+            </otherwise>
+        </choose>
+    </if>
+    ORDER BY u.ins_time desc
+</select>
+<select id="selectIntentionCust" parameterType="map" resultType="com.yicheejia.modules.shop.entity.IntentionCustomerEntity">
+ SELECT
+    u.shop_id AS shopId,
+    u.customer_id AS customerId,
+    u.customer_name AS customerName,
+    u.customer_tel AS customerTel,
+    u.sex AS sex,
+    u.address AS address,
+    u.car_brand_name AS carBrandName,
+    u.car_firm_name AS carFirmName,
+    u.car_series_name AS carSeriesName,
+    u.car_type_name AS carTypeName,
+    u.`level` AS LEVEL,
+    u.pay_way AS payWay,
+    u.arrive_time AS arriveTime,
+    u.dealed AS dealed,
+    u.other_person AS otherPerson,
+    u.other_tel AS otherTel,
+    u.id_card_no AS idCardNo
+    FROM
+  ycej_intention_customer u WHERE (u.id_card_no = #{idCardNo} or u.customer_tel = #{customerTel}) and (u.intention_customer_state IS NULL  OR u.intention_customer_state != 1)
+  <if test="customerName != null and customerName != ''">
+  </if>
+  <if test="idCardNo != null and idCardNo != ''">
+  </if>
+  <if test="customerTel != null and customerTel != ''">
+  </if>
+</select>
+<update id="updateCustomer" parameterType="com.yicheejia.modules.shop.entity.IntentionCustomerEntity">
+		update ycej_intention_customer
+		set order_no = #{orderNo}, 
+		intention_customer_state = 1,
+		upd_time = NOW()
+		<where>1=1 and customer_tel = #{customerTel}
+			<if test="customerName != null and customerName != ''">and customer_name = #{customerName} </if>
+			<!-- if test="idCardNo != null and idCardNo != ''">and id_card_no = #{idCardNo} </if> -->
+		</where>
+</update>
+<update id="batchUpdateCustomer" parameterType="com.yicheejia.modules.shop.entity.IntentionCustomerEntity">
+	<foreach collection="list" item="item" index="index" separator=";">
+		update ycej_intention_customer
+		<trim prefix="set" suffixOverrides=",">
+			order_no = #{item.orderNo}, 
+			intention_customer_state = 1,
+			upd_time = NOW(), 
+			upd_user = #{item.updUser}
+		</trim>
+		<where>1=1 and customer_tel = #{item.customerTel}
+		</where>
+	</foreach>
+</update>
+</mapper>

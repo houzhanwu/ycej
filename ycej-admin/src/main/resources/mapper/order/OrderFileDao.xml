@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.order.dao.OrderFileDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.order.entity.OrderFileEntity" id="orderFileMap">
+        <result property="orderFileId" column="order_file_id"/>
+        <result property="imgName" column="img_name"/>
+        <result property="fileId" column="file_id"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="businessType" column="business_type"/>
+        <result property="orderId" column="order_id"/>
+        <result property="fileType" column="file_type"/>
+    </resultMap>
+	<insert id="insertReturnId" parameterType="com.yicheejia.modules.order.entity.OrderFileEntity"  useGeneratedKeys="true" keyProperty="orderFileId">
+		insert into ycej_order_file
+		(img_name,file_id,order_id,file_type,insert_id,insert_time)
+			value
+		(#{imgName},#{fileId},#{orderId},#{fileType},#{insertId},NOW())
+	</insert>
+ <select id="queryList" parameterType="map" resultType="com.yicheejia.modules.order.entity.OrderFileEntity">
+	SELECT 
+	  t.order_file_id as orderFileId,t.img_name as imgName,t.file_id as fileId,t.insert_id as insertId,t.insert_time as insertTime,t.business_type as businessType,t.order_id as orderId,t.file_type as fileType,
+	  t1.file_name as fileName,t1.file_path as filePath
+	FROM
+	  ycej_order_file t 
+	  LEFT JOIN ycej_file t1 
+	    ON t.file_id = t1.file_id 
+	  WHERE t1.is_enabled = 1
+	  <if test="orderId !=null and orderId !=''">
+	        AND t.order_id = #{orderId}
+	  </if>
+	  <if test="fileType !=null and fileType !=''">
+	  		AND t.file_type = #{fileType}
+	  </if>
+ </select>
+</mapper>

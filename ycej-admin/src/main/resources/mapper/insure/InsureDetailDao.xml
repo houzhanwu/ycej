@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.insure.dao.InsureDetailDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.insure.entity.InsureDetailEntity" id="insureDetailMap">
+        <result property="insureDetailId" column="insure_detail_id"/>
+        <result property="insureId" column="insure_id"/>
+        <result property="strongNo" column="strong_no"/>
+        <result property="strongAmount" column="strong_amount"/>
+        <result property="vehicleAmount" column="vehicle_amount"/>
+        <result property="strongBegdate" column="strong_begdate"/>
+        <result property="strongEndate" column="strong_endate"/>
+        <result property="commercialNo" column="commercial_no"/>
+        <result property="commercialAmount" column="commercial_amount"/>
+        <result property="commercialBegdate" column="commercial_begdate"/>
+        <result property="commercialEndate" column="commercial_endate"/>
+        <result property="carLoss" column="car_loss"/>
+        <result property="deductibles" column="deductibles"/>
+        <result property="robbery" column="robbery"/>
+        <result property="threeLiability" column="three_liability"/>
+        <result property="driveAmount" column="drive_amount"/>
+        <result property="passengerAmount" column="passenger_amount"/>
+        <result property="noCar" column="no_car"/>
+        <result property="noThree" column="no_three"/>
+        <result property="noDrive" column="no_drive"/>
+        <result property="noPassenger" column="no_passenger"/>
+        <result property="notThird" column="not_third"/>
+        <result property="scratching" column="scratching"/>
+        <result property="glass" column="glass"/>
+        <result property="glassIsout" column="glass_isout"/>
+        <result property="pyrophoricity" column="pyrophoricity"/>
+        <result property="noRobbery" column="no_robbery"/>
+        <result property="noScratching" column="no_scratching"/>
+        <result property="noPyrophoricity" column="no_pyrophoricity"/>
+        <result property="noWading" column="no_wading"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateInsureDetail" parameterType="com.yicheejia.modules.insure.entity.InsureDetailEntity" >
+		update ycej_insure_detail
+		<trim prefix="set" suffixOverrides=",">
+			<if test="insureDetailId != null">  insure_detail_id = #{insureDetailId}, </if> 
+			<if test="insureId != null">  insure_id = #{insureId}, </if> 
+			<if test="strongNo != null">  strong_no = #{strongNo}, </if> 
+			<if test="strongAmount != null">  strong_amount = #{strongAmount}, </if> 
+			<if test="vehicleAmount != null">  vehicle_amount = #{vehicleAmount}, </if> 
+			<if test="strongBegdate != null">  strong_begdate = #{strongBegdate}, </if> 
+			<if test="strongEndate != null">  strong_endate = #{strongEndate}, </if> 
+			<if test="commercialNo != null">  commercial_no = #{commercialNo}, </if> 
+			<if test="commercialAmount != null">  commercial_amount = #{commercialAmount}, </if> 
+			<if test="commercialBegdate != null">  commercial_begdate = #{commercialBegdate}, </if> 
+			<if test="commercialEndate != null">  commercial_endate = #{commercialEndate}, </if> 
+			<if test="carLoss != null">  car_loss = #{carLoss}, </if> 
+			<if test="deductibles != null">  deductibles = #{deductibles}, </if> 
+			<if test="robbery != null">  robbery = #{robbery}, </if> 
+			<if test="threeLiability != null">  three_liability = #{threeLiability}, </if> 
+			<if test="driveAmount != null">  drive_amount = #{driveAmount}, </if> 
+			<if test="passengerAmount != null">  passenger_amount = #{passengerAmount}, </if> 
+			<if test="noCar != null">  no_car = #{noCar}, </if> 
+			<if test="noThree != null">  no_three = #{noThree}, </if> 
+			<if test="noDrive != null">  no_drive = #{noDrive}, </if> 
+			<if test="noPassenger != null">  no_passenger = #{noPassenger}, </if> 
+			<if test="notThird != null">  not_third = #{notThird}, </if> 
+			<if test="scratching != null">  scratching = #{scratching}, </if> 
+			<if test="glass != null">  glass = #{glass}, </if> 
+			<if test="glassIsout != null">  glass_isout = #{glassIsout}, </if> 
+			<if test="pyrophoricity != null">  pyrophoricity = #{pyrophoricity}, </if> 
+			<if test="noRobbery != null">  no_robbery = #{noRobbery}, </if> 
+			<if test="noScratching != null">  no_scratching = #{noScratching}, </if> 
+			<if test="noPyrophoricity != null">  no_pyrophoricity = #{noPyrophoricity}, </if> 
+			<if test="noWading != null">  no_wading = #{noWading}, </if> 
+			<if test="insertId != null">  insert_id = #{insertId}, </if> 
+			<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+			<if test="updateId != null">  update_id = #{updateId}, </if> 
+			<if test="updateTime != null">  update_time = #{updateTime} </if> 
+		</trim>
+		where insure_detail_id = #{insureDetailId}
+    </update>
+	<select id="queryDetail" parameterType="map" resultType="com.yicheejia.modules.insure.entity.InsureDetailEntity">
+		SELECT t.insure_detail_id AS insureDetailId,
+			t.insure_id AS insureId,
+			t1.insurance_id AS insuranceId,
+			t1.commercial_id AS commercialId,
+			t.strong_no AS strongNo,
+			t.strong_amount AS strongAmount,
+			t.vehicle_amount AS vehicleAmount,
+			t.strong_begdate AS strongBegdate,
+			t.strong_endate AS strongEndate,
+			t.commercial_no AS commercialNo,
+			t.commercial_amount AS commercialAmount,
+			t.commercial_begdate AS commercialBegdate,
+			t.commercial_endate AS commercialEndate,
+			t.car_loss AS carLoss,
+			t.deductibles AS deductibles,
+			t.robbery AS robbery,
+			t.three_liability AS threeLiability,
+			t.drive_amount AS driveAmount,
+			t.passenger_amount AS passengerAmount,
+			t.no_car AS noCar,
+			t.no_three AS noThree,
+			t.no_drive AS noDrive,
+			t.no_passenger AS noPassenger,
+			t.not_third AS notThird,
+			t.scratching AS scratching,
+			t.glass AS glass,
+			t.glass_isout AS glassIsout,
+			t.pyrophoricity AS pyrophoricity,
+			t.no_robbery AS noRobbery,
+			t.no_scratching AS noScratching,
+			t.no_pyrophoricity AS noPyrophoricity,
+			t.no_wading AS noWading,
+			t1.order_id AS orderId
+		FROM ycej_insure_detail t LEFT JOIN ycej_insure t1 ON t.insure_id = t1.insure_id
+		WHERE 1 = 1
+		<if test="orderId != null and orderId != '' ">
+			and t1.order_id = #{orderId}
+		</if>
+	</select>
+</mapper>

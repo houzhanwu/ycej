@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarBrandDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarBrandEntity" id="carBrandMap">
+        <result property="carBrandId" column="car_brand_id"/>
+        <result property="carBrand" column="car_brand"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isEnabled" column="is_enabled"/>
+    </resultMap>
+    
+    <select id="getCarBrands" resultType="java.util.Map" parameterType="map">
+        SELECT b.car_brand AS carBrand,b.car_brand_id AS carBrandId FROM ycej_car_brand b WHERE b.is_enabled = 1 
+        <if test="carBrand != null and carBrand != ''">
+			AND b.car_brand LIKE '%${carBrand}%'
+		</if>
+		<if test="carBrandId != null and carBrandId != ''">
+			AND b.car_brand_id = #{carBrandId}
+		</if>
+    </select>
+
+
+</mapper>

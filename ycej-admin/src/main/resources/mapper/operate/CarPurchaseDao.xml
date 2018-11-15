@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarPurchaseDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarPurchaseEntity" id="carPurchaseMap">
+        <result property="purchId" column="purch_id"/>
+        <result property="purchNo" column="purch_no"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="storeInfo" column="store_info"/>
+        <result property="carFrom" column="car_from"/>
+        <result property="purchAmount" column="purch_amount"/>
+        <result property="count" column="count"/>
+        <result property="openingBank" column="opening_bank"/>
+        <result property="openingBranchbank" column="opening_branchbank"/>
+        <result property="accountNo" column="account_no"/>
+        <result property="carType" column="car_type"/>
+        <result property="status" column="status"/>
+        <result property="isPay" column="is_pay"/>
+        <result property="purchDate" column="purch_date"/>
+        <result property="inboundDate" column="inbound_date"/>
+        <result property="warehouse" column="warehouse"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <select id="queryCarPurchase" parameterType="map" resultType="com.yicheejia.modules.operate.entity.CarPurchaseEntity">
+    	select p.purch_id purchId,p.purch_no purchNo,p.supplier_name supplierName,p.supplier_id supplierId,d.value storeInfoValue,d1.value carFromValue,p.purch_amount purchAmount,
+			p.count count,p.opening_bank openingBank,p.opening_branchbank openingBranchbank,p.account_no accountNo,d2.value carTypeValue,d3.value statusValue,
+			d4.value isPayValue,p.purch_date purchDate,p.inbound_date inboundDate,d5.value warehouseValue,p.insert_time insertTime,p.insert_id insertId,p.update_time updateTime,
+			p.update_id updateId,p.remark remark,p.status status
+				from ycej_car_purchase p
+			left join sys_dict d
+				on d.code = p.store_info and d.type='store_info'
+			left join sys_dict d1
+				on d1.code = p.car_from and d1.type='car_from'
+			left join sys_dict d2
+				on d2.code = p.car_type and d2.type='car_type'
+			left join sys_dict d3
+				on d3.code = p.status and d3.type='purch_status'
+			left join sys_dict d4
+				on d4.code = p.is_pay and d4.type = 'is_pay'
+			left join sys_dict d5
+				on d5.code = p.warehouse and d5.type = 'warehouse' 
+    		where 1=1 
+    		<if test="supplier_id!= null and supplier_id!=''">
+    			and p.supplier_id = #{supplier_id}
+    		</if>
+    		<if test="purch_date!= null and purch_date!=''">
+    			and date(p.purch_date) = #{purch_date}
+    		</if>
+    		order by p.update_time desc
+    </select>
+    
+    <insert id="insertReturnId" parameterType="com.yicheejia.modules.operate.entity.CarPurchaseEntity" useGeneratedKeys="true" keyProperty="purchId">
+    	insert 
+    		into 
+    	ycej_car_purchase 
+    		(purch_id,purch_no,supplier_id,store_info,car_from,purch_amount,count,opening_bank,opening_branchbank,account_no,car_type,status,is_pay,purch_date,inbound_date,warehouse,insert_time,insert_id,update_time,update_id,remark)
+    	value
+    		(#{purchId},#{purchNo},#{supplierId},#{storeInfo},#{carFrom},#{purchAmount},#{count},#{openingBank},#{openingBranchbank},#{accountNo},#{carType},#{status},#{isPay},#{purchDate},#{inboundDate},#{warehouse},#{insertTime},#{insertId},#{updateTime},#{updateId},#{remark})
+    </insert>
+    <update id="updateCarPurchase"  parameterType="map">
+    	update ycej_order
+		<trim prefix="set" suffixOverrides=",">
+			<if test="purchNo != null">purch_no = #{purchNo}, </if>
+			<if test="supplierId != null">supplier_id = #{supplierId}, </if>
+			<if test="storeInfo != null">store_info = #{storeInfo}, </if>
+			<if test="carFrom != null">car_from = #{carFrom}, </if>
+			<if test="purchAmount != null">purch_amount = #{purchAmount}, </if>
+			<if test="count != null">count = #{count}, </if>
+			<if test="openingBank != null">opening_bank = #{openingBank}, </if>
+			<if test="openingBranchbank != null">opening_branchbank = #{openingBranchbank}, </if>
+			<if test="accountNo != null">account_no = #{accountNo}, </if>
+			<if test="carType != null">car_type = #{carType}, </if>
+			<if test="status != null">status = #{status}, </if>
+			<if test="isPay != null">is_pay = #{isPay}, </if>
+			<if test="purchDate != null">purch_date = #{purchDate}, </if>
+			<if test="inboundDate != null">inbound_date = #{inboundDate}, </if>
+			<if test="warehouse != null">warehouse = #{warehouse}, </if>
+			<if test="insertTime != null">insert_time = #{insertTime}, </if>
+			<if test="insertId != null">insert_id = #{insertId}, </if>
+			<if test="updateTime != null">update_time = #{updateTime}, </if>
+			<if test="updateId != null">update_id = #{updateId}, </if>
+			<if test="remark != null">remark = #{remark} </if>
+		</trim>
+		<where>purch_id = #{purchId}</where>
+    </update>
+
+	
+</mapper>

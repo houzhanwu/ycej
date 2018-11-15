@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.order.dao.SalePromotionDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.order.entity.SalePromotionEntity" id="salePromotionMap">
+        <result property="saleId" column="sale_id"/>
+        <result property="saleCode" column="sale_code"/>
+        <result property="saleContact" column="sale_contact"/>
+        <result property="saleMobile" column="sale_mobile"/>
+        <result property="saleAdd" column="sale_add"/>
+        <result property="goodsPrice" column="goods_price"/>
+        <result property="deductionPrice" column="deduction_price"/>
+        <result property="endDate" column="end_date"/>
+        <result property="payType" column="pay_type"/>
+        <result property="payMoney" column="pay_money"/>
+        <result property="buyType" column="buy_type"/>
+        <result property="payNumber" column="pay_number"/>
+        <result property="saleName" column="sale_name"/>
+        <result property="saleComment" column="sale_comment"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateSalePromotion" parameterType="com.yicheejia.modules.order.entity.SalePromotionEntity" >
+		update ycej_sale_promotion
+		<trim prefix="set" suffixOverrides=",">
+		<if test="saleId != null">  sale_id = #{saleId}, </if> 
+		<if test="saleCode != null">  sale_code = #{saleCode}, </if> 
+		<if test="saleContact != null">  sale_contact = #{saleContact}, </if> 
+		<if test="saleMobile != null">  sale_mobile = #{saleMobile}, </if> 
+		<if test="saleAdd != null">  sale_add = #{saleAdd}, </if> 
+		<if test="goodsPrice != null">  goods_price = #{goodsPrice}, </if> 
+		<if test="deductionPrice != null">  deduction_price = #{deductionPrice}, </if> 
+		<if test="endDate != null">  end_date = #{endDate}, </if> 
+		<if test="payType != null">  pay_type = #{payType}, </if> 
+		<if test="payMoney != null">  pay_money = #{payMoney}, </if> 
+		<if test="buyType != null">  buy_type = #{buyType}, </if> 
+		<if test="payNumber != null">  pay_number = #{payNumber}, </if> 
+		<if test="saleName != null">  sale_name = #{saleName}, </if> 
+		<if test="saleComment != null">  sale_comment = #{saleComment}, </if> 
+		<if test="insertId != null">  insert_id = #{insertId}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		</trim>
+		where
+    </update>
+    
+    <insert id="insertSalePromotionList" parameterType="java.util.List">
+    	INSERT INTO ycej_sale_promotion (
+			sale_id,
+			sale_code,
+			sale_contact,
+			sale_mobile,
+			sale_add,
+			goods_price,
+			deduction_price,
+			end_date,
+			pay_type,
+			pay_money,
+			buy_type,
+			pay_number,
+			sale_name,
+			sale_comment,
+			insert_time,
+			is_used
+		) 
+		VALUES 
+		<foreach collection="list" item="item" index= "index" separator=",">
+            (#{item.saleId},#{item.saleCode},#{item.saleContact},#{item.saleMobile},
+             #{item.saleAdd},#{item.goodsPrice},#{item.deductionPrice},#{item.endDate},
+             #{item.payType},#{item.payMoney},#{item.buyType},#{item.payNumber},
+             #{item.saleName},#{item.saleComment},#{item.insertTime},#{item.isUsed})
+        </foreach>
+
+    </insert>
+    
+    <select id="querySalePromotionList" parameterType="map" resultType="com.yicheejia.modules.order.entity.SalePromotionEntity">
+    	SELECT
+			sale_id AS saleId,
+			sale_code AS saleCode,
+			sale_contact AS saleContact,
+			sale_mobile AS saleMobile,
+			sale_add AS saleAdd,
+			goods_price AS goodsPrice,
+			deduction_price AS deductionPrice,
+			end_date AS endDate,
+			pay_type AS payType,
+			pay_money AS payMoney,
+			buy_type AS buyType,
+			pay_number AS payNumber,
+			sale_name AS saleName,
+			sale_comment AS saleComment,
+			`insert_id` AS insertId,
+			insert_time AS insertTime,
+			is_used AS isUsed
+		FROM
+			ycej_sale_promotion
+		WHERE 1=1
+		<if test="buyType != null and buyType != ''">
+			AND buy_type LIKE '%${buyType}%'
+		</if>
+		<if test="isUsed != null and isUsed != ''">
+			AND is_used = #{isUsed}
+		</if>
+		ORDER BY insert_time DESC
+    </select>
+    
+    <update id="updateBySaleId" parameterType="map">
+	    UPDATE ycej_sale_promotion
+		SET is_used = '1',order_id = #{orderId}
+		WHERE
+			sale_id = #{saleId}
+		<if test="zpId != null and zpId != ''">
+			OR sale_id = #{zpId}
+		</if>
+    </update>
+    
+    <select id="getPromotionList" resultType="java.util.Map">
+    	SELECT
+			a.sale_id,
+			a.sale_code,
+			a.end_date,
+			a.goods_price,
+			a.deduction_price,
+			a.pay_type,
+			a.pay_money,
+			a.buy_type,
+			a.pay_number,
+			a.sale_name,
+			a.sale_contact,
+			a.sale_mobile,
+			a.sale_add
+		FROM
+			ycej_sale_promotion a
+		WHERE
+			a.is_used = '0'
+		AND DATE_FORMAT(a.end_date,'%Y-%m-%d') >=  DATE_FORMAT(NOW(),'%Y-%m-%d')
+		AND a.buy_type LIKE '%${buyType}%'
+    </select>
+    <select id="getZPPromotionList" resultType="java.util.Map">
+    	SELECT
+			a.sale_id,
+			a.sale_code,
+			a.end_date,
+			a.goods_price,
+			a.deduction_price,
+			a.pay_type,
+			a.pay_money,
+			a.buy_type,
+			a.pay_number,
+			a.sale_name,
+			a.sale_contact,
+			a.sale_mobile,
+			a.sale_add
+		FROM
+			ycej_sale_promotion a
+		WHERE
+			a.is_used = '0'
+		AND DATE_FORMAT(a.end_date,'%Y-%m-%d') >=  DATE_FORMAT(NOW(),'%Y-%m-%d')
+		AND a.buy_type LIKE '%${buyType}%'
+    </select>
+    
+    <select id="getPromotionListByOrderId" resultType="java.util.Map">
+    	SELECT
+			a.sale_id,
+			a.sale_code,
+			a.end_date,
+			a.goods_price,
+			a.deduction_price,
+			a.pay_type,
+			a.pay_money,
+			a.buy_type,
+			a.pay_number,
+			a.sale_name,
+			a.sale_contact,
+			a.sale_mobile,
+			a.sale_add
+		FROM
+			ycej_sale_promotion a
+		WHERE
+			a.order_id = #{orderId}
+    </select>
+
+</mapper>

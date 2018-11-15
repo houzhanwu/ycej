@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.SupplierFileDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.SupplierFileEntity" id="supplierFileMap">
+        <result property="supplierFileId" column="supplier_file_id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="fileId" column="file_id"/>
+        <result property="licenseImg" column="license_img"/>
+        <result property="insTime" column="ins_time"/>
+        <result property="insUser" column="ins_user"/>
+        <result property="fileType" column="file_type"/>
+        <result property="filePath" column="filePath"/>
+    </resultMap>
+
+	<select id="selectBySupplierId" resultType="com.yicheejia.modules.operate.entity.SupplierFileEntity">
+		SELECT
+			supplier_id AS supplierId,
+			file_id AS fileId,
+			license_img AS licenseImg
+		FROM
+			ycej_supplier_file
+		WHERE supplier_id = #{supplierId}
+	</select>
+    
+    <!-- 修改 -->
+	<update id="updateSupplierFile" parameterType="com.yicheejia.modules.operate.entity.SupplierFileEntity" >
+		update ycej_supplier_file
+		<trim prefix="set" suffixOverrides=",">
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="fileId != null">  file_id = #{fileId}, </if> 
+		<if test="licenseImg != null">  license_img = #{licenseImg}, </if> 
+		<if test="insTime != null">  ins_time = #{insTime}, </if> 
+		<if test="insUser != null">  ins_user = #{insUser}, </if> 
+		</trim>
+		where supplier_id = #{supplierId}
+    </update>
+	<select id="queryList" parameterType="map" resultType="com.yicheejia.modules.operate.entity.SupplierFileEntity">
+		SELECT
+			t.supplier_file_id supplierFileId,
+			t.file_id fileId,
+			d.value fileType,
+			t.ins_time insTime,
+			t.ins_user insUser,
+			t.license_img licenseImg,
+			t.supplier_id supplierId
+		FROM
+			ycej_supplier_file t
+		LEFT JOIN ycej_file t1 ON t.file_id = t1.file_id
+		LEFT JOIN sys_dict d on d.type = 'file_type' and d.code = t.file_type
+		WHERE
+			t1.is_enabled = 1
+			  <if test="supplierId !=null and supplierId !=''">
+			        AND t.supplier_id = #{supplierId}
+			  </if>
+			  <if test="fileType !=null and fileType !=''">
+			  		AND t.file_type = #{fileType}
+			  </if>
+	</select>
+	<select id="selectListBySupplierId" resultType="com.yicheejia.modules.operate.entity.SupplierFileEntity">
+		SELECT
+			s.supplier_file_id supplierFileId,
+			s.supplier_id supplierId,
+			s.file_id fileId,
+			s.license_img licenseImg,
+			s.ins_time insTime,
+			s.ins_user insUser,
+			s.file_type fileType,
+			f.file_path filePath
+		FROM
+			ycej_supplier_file s
+		LEFT JOIN ycej_file f ON f.file_id = s.file_id
+		where s.supplier_id = #{supplierId}
+	</select>
+</mapper>

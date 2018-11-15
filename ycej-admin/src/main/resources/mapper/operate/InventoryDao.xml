@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.InventoryDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.InventoryEntity" id="inventoryMap">
+        <result property="inventoryId" column="inventory_id"/>
+        <result property="carBrand" column="car_brand"/>
+        <result property="carManufacturer" column="car_manufacturer"/>
+        <result property="carSeries" column="car_series"/>
+        <result property="carModel" column="car_model"/>
+        <result property="carColour" column="car_colour"/>
+        <result property="vin" column="vin"/>
+        <result property="engineId" column="engine_id"/>
+        <result property="manufactureDate" column="manufacture_date"/>
+        <result property="storageDate" column="storage_date"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="receiptPrice" column="receipt_price"/>
+        <result property="costPrice" column="cost_price"/>
+        <result property="salePrice" column="sale_price"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="carSource" column="car_source"/>
+        <result property="dinsurance" column="dinsurance"/>
+        <result property="dinsurancePrice" column="dinsurance_price"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="comment" column="comment"/>
+        <result property="certificateAdd" column="certificate_add"/>
+        <result property="carStatus" column="car_status"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateinventory" parameterType="com.yicheejia.modules.operate.entity.InventoryEntity" >
+		update  ycej_inventory 
+		<trim prefix="set" suffixOverrides=",">
+<!-- 		<if test="inventoryId != null">  inventory_id = #{inventoryId}, </if>  -->
+		<if test="carBrand != null">  car_brand = #{carBrand}, </if> 
+		<if test="carManufacturer != null">  car_manufacturer = #{carManufacturer}, </if> 
+		<if test="carSeries != null">  car_series = #{carSeries}, </if> 
+		<if test="carModel != null">  car_model = #{carModel}, </if> 
+		<if test="interiorColor != null">  interior_color = #{interiorColor}, </if>
+		<if test="carColour != null">  car_colour = #{carColour}, </if> 
+		<if test="vin != null">  vin = #{vin}, </if> 
+		<if test="engineId != null">  engine_id = #{engineId}, </if> 
+		<if test="manufactureDate != null">  manufacture_date = #{manufactureDate}, </if> 
+		<if test="storageDate != null">  storage_date = #{storageDate}, </if> 
+		<if test="insertId != null">  insert_id = #{insertId}, </if> 
+		<if test="receiptPrice != null">  receipt_price = #{receiptPrice}, </if> 
+		<if test="costPrice != null">  cost_price = #{costPrice}, </if> 
+		<if test="salePrice != null">  sale_price = #{salePrice}, </if> 
+		<if test="shopId != null">  shop_id = #{shopId}, </if> 
+		<if test="carSource != null">  car_source = #{carSource}, </if> 
+		<if test="dinsurance != null">  dinsurance = #{dinsurance}, </if> 
+		<if test="dinsurancePrice != null">  dinsurance_price = #{dinsurancePrice}, </if> 
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="updateId != null">  update_id = #{updateId}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		<if test="comment != null">  comment = #{comment}, </if> 
+		<if test="certificateAdd != null">  certificate_add = #{certificateAdd}, </if> 
+		<if test="carStatus != null">  car_status = #{carStatus}</if> 
+		where inventory_id = #{inventoryId}
+		</trim>
+    </update>
+    
+    <select id="getInventoryByShopId" parameterType="map" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+		SELECT
+		 	a.inventory_id AS inventoryId,
+			e.car_brand AS carBrand,
+			d.car_manufacturer AS carManufacturer,
+			c.car_series AS carSeries,
+			b.car_model AS carModel,
+			g.color AS carColour,
+			g.decoration_color AS interiorColor,
+			b.car_emissions AS carEmissions,
+			a.cost_price AS costPrice,
+			a.sale_price AS salePrice,
+			a.receipt_price AS receiptPrice,
+			a.vin AS vin,
+			a.engine_id AS engineId,
+			a.certificate_add AS certificateAdd,
+			a.car_status AS carStatus,
+			f.supplier_name supplierName
+		FROM
+			ycej_inventory a
+		LEFT JOIN ycej_car_model b ON a.car_model = b.car_model_id
+		LEFT JOIN ycej_car_series c ON a.car_series = c.car_series_id
+		LEFT JOIN ycej_car_manufacturer d ON a.car_manufacturer = d.car_manufacturer_id
+		LEFT JOIN ycej_car_brand e ON a.car_brand = e.car_brand_id
+		LEFT JOIN ycej_supplier f on a.inventory_id = f.supplier_id
+		LEFT JOIN ycej_car_color g ON a.car_colour = g.id
+		LEFT JOIN ycej_car_color h ON a.interior_color = h.id
+		
+		WHERE
+			a.car_status = 1 AND a.is_order = 0
+			AND	(a.shop_id = #{shopId}
+			OR warehouse_id = #{shopId})
+		ORDER BY
+			a.storage_date DESC
+    </select>
+    
+    <select id="selectInventory" parameterType="map" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+   	    SELECT
+			t4.car_brand AS carBrand,
+			t3.car_manufacturer AS carManufacturer,
+			t2.car_series AS carSeries,
+			t.car_model AS carModel,
+			t1.car_model AS carModelName,
+			t.car_colour AS carColour,
+			t9.color AS colourName,
+			t10.decoration_color AS interiorColorName,
+			t1.car_emissions AS carEmissions,
+			t.cost_price AS costPrice,
+			t.sale_price AS salePrice,
+			t.receipt_price AS receiptPrice,
+			t.vin AS vin,
+			t.engine_id AS engineId,
+			t.certificate_add AS certificateAdd,
+			t.storage_date AS storageDate,
+			t.manufacture_date AS manufactureDate,
+			t.shop_id AS shopId,
+			t.car_model AS carModelId,
+			t.inventory_id AS inventoryId,
+			t.car_source as carSource,
+			t5.shop_name AS shopName,
+			t8.purch_date AS purchDate
+		FROM
+			ycej_inventory t
+		LEFT JOIN ycej_car_model t1 ON t.car_model = t1.car_model_id
+		LEFT JOIN ycej_car_series t2 ON t.car_series = t2.car_series_id
+		LEFT JOIN ycej_car_manufacturer t3 ON t.car_manufacturer = t3.car_manufacturer_id
+		LEFT JOIN ycej_car_brand t4 ON t.car_brand = t4.car_brand_id
+		LEFT JOIN ycej_shop t5 ON t.shop_id = t5.shop_id
+		LEFT JOIN ycej_purchase_detail t7 ON t.car_model = t7.model_id
+		LEFT JOIN ycej_car_purchase t8 ON t7.purch_id = t8.purch_id
+		LEFT JOIN ycej_car_color t9 ON t.car_colour = t9.id
+		LEFT JOIN ycej_car_color t10 ON t.interior_color = t10.id
+		WHERE 1=1 AND t.shop_id IS NOT NULL AND t.warehouse_id IS NULL 
+		<if test="carStatus != null and carStatus != ''">
+			and t.car_status in (1,5)
+		</if>
+		<if test="carStatus1 != null and carStatus1 != ''">
+			and t.car_status in (1)
+		</if>
+		<if test="carModel != null and carModel != ''"></if>
+			and t.car_model = #{carModel}
+		<if test="shopId !=null and shopId !=''">
+			and t.shop_id = #{shopId}
+		</if>
+		<if test="inventoryId !=null and inventoryId !=''">
+			AND t.inventory_id = #{inventoryId}
+		</if>
+		GROUP BY t.inventory_id
+		UNION
+		SELECT
+			t4.car_brand AS carBrand,
+			t3.car_manufacturer AS carManufacturer,
+			t2.car_series AS carSeries,
+			t.car_model AS carModel,
+			t1.car_model AS carModelName,
+			t.car_colour AS carColour,
+			t9.color AS colourName,
+			t10.decoration_color AS interiorColorName,
+			t1.car_emissions AS carEmissions,
+			t.cost_price AS costPrice,
+			t.sale_price AS salePrice,
+			t.receipt_price AS receiptPrice,
+			t.vin AS vin,
+			t.engine_id AS engineId,
+			t.certificate_add AS certificateAdd,
+			t.storage_date AS storageDate,
+			t.manufacture_date AS manufactureDate,
+			t.warehouse_id AS shopId,
+			t.car_model AS carModelId,
+			t.inventory_id AS inventoryId,
+			t.car_source as carSource,
+			t5.warehouse_name AS shopName,
+			t8.purch_date AS purchDate
+		FROM
+			ycej_inventory t
+		LEFT JOIN ycej_car_model t1 ON t.car_model = t1.car_model_id
+		LEFT JOIN ycej_car_series t2 ON t.car_series = t2.car_series_id
+		LEFT JOIN ycej_car_manufacturer t3 ON t.car_manufacturer = t3.car_manufacturer_id
+		LEFT JOIN ycej_car_brand t4 ON t.car_brand = t4.car_brand_id
+		LEFT JOIN ycej_warehouse_management t5 ON t.warehouse_id = t5.id
+		LEFT JOIN ycej_purchase_detail t7 ON t.car_model = t7.model_id
+		LEFT JOIN ycej_car_purchase t8 ON t7.purch_id = t8.purch_id
+		LEFT JOIN ycej_car_color t9 ON t.car_colour = t9.id
+		LEFT JOIN ycej_car_color t10 ON t.interior_color = t10.id
+		WHERE 1=1 AND t.warehouse_id IS NOT NULL AND t.shop_id IS NULL 
+		<if test="carStatus != null and carStatus != ''">
+			and t.car_status in (1,5)
+		</if>
+		<if test="carStatus1 != null and carStatus1 != ''">
+			and t.car_status in (1)
+		</if>
+		<if test="carModel != null and carModel != ''"></if>
+			and t.car_model = #{carModel}
+		<if test="shopId !=null and shopId !=''">
+			and t.shop_id = #{shopId}
+		</if>
+		<if test="inventoryId !=null and inventoryId !=''">
+			AND t.inventory_id = #{inventoryId}
+		</if>
+			GROUP BY t.inventory_id
+    </select>
+    <insert id="insertReturnId" parameterType="com.yicheejia.modules.operate.entity.InventoryEntity" useGeneratedKeys="true" keyProperty="inventoryId">
+    	insert into 
+    		ycej_inventory
+    	(car_brand,car_manufacturer,car_series,car_model,car_colour,vin,engine_id,manufacture_date,storage_date,insert_id,receipt_price,cost_price,sale_price,shop_id,car_source,dinsurance,dinsurance_price,supplier_id,update_id,update_time,comment,certificate_add,car_status,warehouse_id)
+    		value
+    	(#{carBrand},#{carManufacturer},#{carSeries},#{carModel},#{carColour},#{vin},#{engineId},#{manufactureDate},#{storageDate},#{insertId},#{receiptPrice},#{costPrice},#{salePrice},#{shopId},#{carSource},#{dinsurance},#{dinsurancePrice},#{supplierId},#{updateId},#{updateTime},#{comment},#{certificateAdd},#{carStatus},#{warehouse_id})
+    </insert>
+    <select id="inventoryList" parameterType="map" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+		SELECT
+			a.inventory_id AS inventoryId,
+			b.car_brand AS carBrand,
+			c.car_manufacturer AS carManufacturer,
+			d.car_series AS carSeries,
+			e.car_model AS carModel,
+			j.color AS carColour,
+			k.decoration_color AS interiorColor,
+			a.vin,
+			a.engine_id AS engineId,
+			a.manufacture_date AS manufactureDate,
+			a.storage_date AS storageDate,
+			h.`name` AS insertName,
+			a.receipt_price AS receiptPrice,
+			a.cost_price AS costPrice,
+			a.sale_price AS salePrice,
+			f.shop_name AS shopName,
+			a.car_source AS carSource,
+			a.dinsurance,
+			a.dinsurance_price AS dinsurancePrice,
+			i.supplier_name supplierName,
+			i.supplier_id AS supplierId,
+			a.update_id AS updateId,
+			a.update_time AS updateTime,
+			a.`comment`,
+			a.certificate_add AS certificateAdd,
+			a.car_status AS carStatus,
+			g.warehouse_name AS warehouseName,
+			e.car_emissions AS carEmissions
+		FROM
+			ycej_inventory a
+		LEFT JOIN ycej_car_brand b ON a.car_brand = b.car_brand_id
+		LEFT JOIN ycej_car_manufacturer c ON a.car_manufacturer = c.car_manufacturer_id
+		LEFT JOIN ycej_car_series d ON a.car_series = d.car_series_id
+		LEFT JOIN ycej_car_model e ON a.car_model = e.car_model_id
+		LEFT JOIN ycej_shop f ON a.shop_id = f.shop_id
+		LEFT JOIN ycej_warehouse_management g ON a.warehouse_id = g.id
+		LEFT JOIN sys_user h ON a.insert_id = h.user_id
+		LEFT JOIN ycej_supplier i ON a.supplier_id = i.supplier_id
+		LEFT JOIN ycej_car_color j ON a.car_colour = j.id
+		LEFT JOIN ycej_car_color k ON a.interior_color = k.id
+		WHERE 1=1  
+		<if test="carStatus == null or carStatus == ''">
+			and a.car_status IN (1,2,5)
+		</if>
+		<if test="inventoryShop != null and inventoryShop != ''">
+			AND (a.shop_id = #{inventoryShop}
+			OR a.warehouse_id = #{inventoryShop})
+		</if>
+		<!-- Start增加时间范围搜索 update by lw 2018-10-10 -->
+		<if test="rStartDate != null and rStartDate != ''">
+			AND DATE_FORMAT(a.storage_date,'%Y-%m-%d') >=  DATE_FORMAT(#{rStartDate},'%Y-%m-%d')
+		</if>
+		<if test="rEndDate != null and rEndDate != ''">
+			AND DATE_FORMAT(a.storage_date,'%Y-%m-%d') <![CDATA[<=]]>  DATE_FORMAT(#{rEndDate},'%Y-%m-%d')
+		</if>
+		<!-- end增加时间范围搜索 update by lw 2018-10-10 -->
+		<if test="inventoryId != null and inventoryId != ''">
+			AND a.inventory_id = #{inventoryId}
+		</if>
+		<if test="carStatus != null and carStatus != ''">
+			AND a.car_status = #{carStatus}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND (b.car_brand LIKE '%${keyword}%'
+			or c.car_manufacturer LIKE '%${keyword}%' 
+			or d.car_series LIKE '%${keyword}%' 
+			or e.car_model LIKE '%${keyword}%')
+		</if>
+		<if test="vin != null and vin != ''">
+			AND a.vin LIKE '%${vin}%'
+		</if>
+		<if test="carSource != null and carSource != ''">
+			AND a.car_source = #{carSource}
+		</if>
+		<if test="isOrder != null and isOrder != ''">
+			AND a.is_order = #{isOrder}
+		</if>
+		<choose>
+            <when test="filterFlag == 1">
+                <if test="shop_id_list != null and shop_id_list.size() > 0">
+		           AND a.shop_id IN
+		           <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+		               #{shopId}
+		           </foreach>
+    			</if>
+            </when>
+            <otherwise>
+<!--                 OR a.warehouse_id IS NOT NULL -->
+            </otherwise>
+         </choose>
+         ORDER BY FIELD(a.car_status,2,1,5),a.storage_date DESC
+    </select>
+    <select id="selectByWareHouse" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+    	<!-- select a.inventory_id inventoryId
+    		from ycej_inventory a
+    	where EXISTS (
+     		SELECT * from ycej_warehouse_management  b
+        where a.warehouse_id = b.id
+   			and a.car_status in ('1','2','5')
+        and b.id = #{id}
+			) -->
+			select inventory_id inventoryId
+			  from ycej_inventory
+			where warehouse_id = #{id}	
+			  and car_status in('1','2','5')
+    </select>
+    <select id="selectDataForCarPurchaseById" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+    	SELECT
+			t4.car_brand_id carBrand,
+			t4.car_brand AS brandName,
+			t3.car_manufacturer AS manufacturerName,
+			t3.car_manufacturer_id carManufacturer,
+			t2.car_series AS seriesName,
+			t2.car_series_id carSeries,
+			t1.car_model_id AS carModel,
+			t1.car_model AS modelName,
+			t9.color AS colourName,
+			t9.id carColour,
+			t10.decoration_color AS interiorColorName,
+			t10.id interiorColor,
+			t1.car_emissions AS carEmissions,
+			t.cost_price AS costPrice,
+			t.sale_price AS salePrice,
+			t.receipt_price AS receiptPrice,
+			t.vin AS vin,
+			t.engine_id AS engineId,
+			t.certificate_add AS certificateAdd,
+			t.storage_date AS storageDate,
+			t.manufacture_date AS manufactureDate,
+			t.shop_id AS shopId,
+			t.car_model AS carModelId,
+			t.car_source as carSource,
+			t.inventory_id inventoryId,
+			t5.shop_name AS shopName,
+			tt.fileId fileId,
+			tt.purchaseDetailId purchaseDetailId,
+			tt.purchDate AS purchDate
+		FROM
+			ycej_inventory t
+		LEFT JOIN ycej_car_model t1 ON t.car_model = t1.car_model_id
+		LEFT JOIN ycej_car_series t2 ON t.car_series = t2.car_series_id
+		LEFT JOIN ycej_car_manufacturer t3 ON t.car_manufacturer = t3.car_manufacturer_id
+		LEFT JOIN ycej_car_brand t4 ON t.car_brand =
+		 t4.car_brand_id
+		LEFT JOIN ycej_shop t5 ON t.shop_id = t5.shop_id
+		left join (select t7.purch_date purchDate ,t8.file_id fileId,t8.purch_detail_id purchaseDetailId,t8.inventory_id inventoryId from ycej_car_purchase t7,ycej_purchase_detail t8 where t7.purch_id = t8.purch_id) tt on tt.inventoryId = t.inventory_id
+		LEFT JOIN ycej_car_color t9 ON t.car_colour = t9.id
+		LEFT JOIN ycej_car_color t10 ON t.interior_color = t10.id
+		<where>
+			1=1
+			<if test="inventoryId !=null and inventoryId != ''">
+				and t.inventory_id = #{inventoryId}
+			</if>
+		</where>
+    </select>
+    
+    <select id="selectByinventoryId" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+		SELECT
+			a.inventory_id AS inventoryId,
+			a.car_brand AS carBrand,
+			a.car_manufacturer AS carManufacturer,
+			a.car_series AS carSeries,
+			a.car_model AS carModel,
+			a.car_colour AS carColour,
+			a.interior_color AS interiorColor,
+			a.vin,
+			a.engine_id AS engineId,
+			a.manufacture_date AS manufactureDate,
+			a.storage_date AS storageDate,
+			a.`insert_id` AS insertId,
+			a.receipt_price AS receiptPrice,
+			a.cost_price AS costPrice,
+			a.sale_price AS salePrice,
+			a.shop_id AS shopId,
+			a.car_source AS carSource,
+			a.dinsurance,
+			a.dinsurance_price AS dinsurancePrice,
+			a.supplier_id AS supplierId,
+			a.update_id AS updateId,
+			a.update_time AS updateTime,
+			a.`comment`,
+			a.certificate_add AS certificateAdd,
+			a.file_id AS fileId,
+			a.car_status AS carStatus,
+			a.warehouse_id AS warehouseId,
+			a.is_order AS isOrder,
+			b.car_emissions AS carEmissions,
+			a.is_zhuan AS isZhuan,
+			c.customer_name AS customerName,
+			c.contact_information AS contactInformation,
+			c.insert_time AS insertTime
+		FROM
+			ycej_inventory a
+		LEFT JOIN ycej_car_model b ON a.car_model = b.car_model_id
+		LEFT JOIN ycej_order c ON a.inventory_id = c.inventory_id
+		WHERE
+			a.inventory_id = #{inventoryId}
+    </select>
+    <!-- 目前库存数据来自库存管理直接新增，不是走正常流程从采购入库的，所以现在先展示从库存管理中获取的数据 -->
+    <select id="selectByCondition" resultType="com.yicheejia.modules.operate.entity.InventoryEntity">
+    	SELECT
+    		i.car_model carModel,
+			b.car_brand brandName,
+			i.shop_id shopId,
+			m.car_manufacturer manufacturerName,
+			s.car_series seriesName,
+			d.car_model modelName,
+			(select c.color from ycej_car_color c where c.id = i.car_colour) colourName,
+			(select c1.decoration_color from ycej_car_color c1 where c1.id = i.interior_color) interiorColorName,
+			i.vin vin,
+			i.engine_id engineId,
+			i.storage_date storageDate,
+			i.manufacture_date manufactureDate,
+			i.receipt_price receiptPrice,
+			i.cost_price costPrice,
+			i.sale_price salePrice,
+			i.car_source carSource,
+			i.dinsurance dinsurance,
+			i.dinsurance_price dinsurancePrice,
+			p.supplier_name supplierName,
+			i.comment comment
+		FROM
+			ycej_inventory i
+		LEFT JOIN ycej_car_brand b on b.car_brand_id = i.car_brand
+		LEFT JOIN ycej_car_manufacturer m on m.car_manufacturer_id = i.car_manufacturer
+		LEFT JOIN ycej_car_series s on s.car_series_id = i.car_series
+		LEFT JOIN ycej_car_model d on d.car_model_id = i.car_model
+		LEFT JOIN ycej_supplier p on p.supplier_id = i.supplier_id
+		where
+		inventory_id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.SupplierDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+
+	<select id="getListForPurchase" resultType="com.yicheejia.modules.operate.entity.SupplierEntity">
+		select * from ycej_supplier
+	</select>
+
+	<select id="getSupplierListPage" parameterType="java.util.Map" resultType="com.yicheejia.modules.operate.entity.SupplierEntity">
+		select 
+			s.supplier_id supplierId,s.supplier_name supplierName,s.supplier_contact supplierContact,s.supplier_type supplierType,s.vehicle_type vehicleType,s.supplier_contact supplierContact,s.supplier_moblie supplierMoblie,s.supplier_add supplierAdd,s.province_id provinceId,
+		s.province_name provinceName,s.city_id cityId,s.city_name cityName,s.supplier_bail supplierBail,s.supplier_carnum supplierCarnum,s.supplier_bankcard supplierBankcard,s.supplier_state supplierState,s.insert_user insertUser,s.insert_time insertTime,s.update_user updateUser,s.update_time updateTime,s.comment comment,s.due_bank dueBank,
+		s.due_bank_code dueBankCode,s.branch_bank branchBank,s.due_account_type dueAccountType,s.due_account_name dueAccountName,
+		 c.carBrandName carBrandName
+			from ycej_supplier s
+		LEFT JOIN
+			(select GROUP_CONCAT(car_brand_name separator ',') carBrandName,supplier_id
+			from ycej_supplier_carbrand
+			GROUP BY supplier_id) c
+		on s.supplier_id = c.supplier_id
+		WHERE 1=1
+		<if test="supplierName != null and supplierName != ''">
+			and (s.supplier_name like '%${supplierName}%' or s.supplier_moblie like '%${supplierName}%')
+		</if>
+		order by s.update_time desc
+	</select>
+	<insert id="insertByCondition" parameterType="com.yicheejia.modules.operate.entity.SupplierEntity"  useGeneratedKeys="true" keyProperty="supplierId">
+		insert into ycej_supplier
+			(supplier_id,supplier_name,supplier_contact,supplier_moblie,supplier_add,province_id,province_name,city_id,city_name
+			,supplier_bail,supplier_carnum,supplier_bankcard,insert_user,insert_time,update_user,update_time,comment,due_bank_code
+			,due_bank,branch_bank,supplier_state,supplier_type,vehicle_type,car_brand,car_brand_name,due_account_type
+			,due_account_name) 
+		value
+			(#{supplierId},#{supplierName},#{supplierContact},#{supplierMoblie},#{supplierAdd},#{provinceId},#{provinceName},
+			#{cityId},#{cityName},#{supplierBail},#{supplierCarnum},#{supplierBankcard},#{insertUser},#{insertTime},
+			#{updateUser},#{updateTime},#{comment},#{dueBankCode},#{dueBank},#{branchBank},#{supplierState},#{supplierType},
+			#{vehicleType},#{carBrand},#{carBrandName},#{dueAccountType},#{dueAccountName})
+	</insert>
+	
+	<select id="getSupplierListForCaution" parameterType="java.util.Map" resultType="com.yicheejia.modules.operate.entity.SupplierEntity">
+		SELECT
+			a.supplier_id AS supplierId,
+			a.supplier_name AS supplierName,
+			a.supplier_contact AS supplierContact,
+			a.vehicle_type AS vehicleType,
+			a.supplier_type AS supplierType,
+			a.supplier_moblie AS supplierMoblie,
+			a.supplier_add AS supplierAdd,
+			a.supplier_bankcard AS supplierBankcard,
+			a.due_bank AS dueBank,
+			a.due_bank_code AS dueBankCode,
+			a.branch_bank AS branchBank,
+			b.carBrandName AS carBrandName
+		FROM
+			ycej_supplier a
+		LEFT JOIN (
+			SELECT
+				GROUP_CONCAT(car_brand_name SEPARATOR ',') carBrandName,
+				supplier_id
+			FROM
+				ycej_supplier_carbrand
+			GROUP BY
+				supplier_id
+		) b ON a.supplier_id = b.supplier_id
+		WHERE
+			1 = 1
+		AND a.supplier_state = 3
+		<if test="supplierName != null and supplierName != ''">
+			AND a.supplier_name like '%${supplierName}%'
+		</if>
+		ORDER BY
+			a.update_time DESC
+	</select>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.upload.dao.YcejFileDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.upload.entity.YcejFileEntity" id="ycejFileMap">
+        <result property="fileId" column="file_id"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileType" column="file_type"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="downFlag" column="down_flag"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isEnabled" column="is_enabled"/>
+    </resultMap>
+
+	<insert id="insertReturnId" parameterType="com.yicheejia.modules.upload.entity.YcejFileEntity" useGeneratedKeys="true" keyProperty="fileId">
+		insert 
+			into 
+		ycej_file
+			(file_name,file_path,file_type,file_size,down_flag,insert_id,insert_time,update_id,update_time,is_enabled)
+		value
+			(#{fileName},#{filePath},#{fileType},#{fileSize},#{downFlag},#{insertId},sysdate(),#{updateId},#{updateTime},#{isEnabled})	
+	</insert>
+
+</mapper>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarSeriesDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarSeriesEntity" id="carSeriesMap">
+        <result property="carSeriesId" column="car_series_id"/>
+        <result property="carManufacturerId" column="car_manufacturer_id"/>
+        <result property="carSeries" column="car_series"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isEnabled" column="is_enabled"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.yicheejia.modules.operate.entity.CarSeriesEntity">
+    	INSERT INTO ycej_car_series ( car_manufacturer_id, car_series, `insert_id`, insert_time, is_enabled ) 
+    	VALUES 
+    	( #{carManufacturerId}, #{carSeries}, #{insertId}, #{insertTime}, #{isEnabled} )
+    </insert>
+    <!-- 查询-->
+    <select id="carSeriesList" resultMap="carSeriesMap">
+		SELECT 
+    	s.car_series_id,a.car_brand,a.car_brand_id,b.car_manufacturer,b.car_manufacturer_id,s.car_series,
+    	s.insert_id,s.insert_time,s.update_id,s.update_time,s.is_enabled 
+    	FROM 
+    	ycej_car_series s 
+    	LEFT JOIN 
+    	ycej_car_manufacturer b 
+    	ON 
+    	s.car_manufacturer_id = b.car_manufacturer_id
+		LEFT JOIN
+		ycej_car_brand a
+		ON
+		b.car_brand_id = a.car_brand_id
+    	WHERE 1=1 
+    	<if test="keyword != null and keyword != ''">
+			AND a.car_brand LIKE '%${keyword}%' or b.car_manufacturer LIKE '%${keyword}%' or s.car_series LIKE '%${keyword}%'
+		</if>
+		ORDER BY s.insert_time DESC ,s.update_time DESC	
+<!--     	<if test="carManufacturer != null and carManufacturer != ''"> -->
+<!-- 			AND b.car_manufacturer LIKE '%${carManufacturer}%' -->
+<!-- 		</if> -->
+<!-- 		<if test="carSeries != null and carSeries != ''"> -->
+<!-- 			AND s.car_series LIKE '%${carSeries}%' -->
+<!-- 		</if> -->
+    </select>
+    <!-- 根据厂商ID获取下拉列表 -->
+    <select id="getCarSeriesList" parameterType="map" resultType="com.yicheejia.modules.operate.entity.CarSeriesEntity">
+		SELECT s.car_manufacturer_id AS carManufacturerId,s.car_series_id AS carSeriesId,
+		s.car_series AS carSeries FROM ycej_car_series s WHERE s.is_enabled = 1 
+		<if test="carManufacturerId != null and carManufacturerId != ''">
+			AND s.car_manufacturer_id = #{carManufacturerId}
+		</if>
+    	<if test="carSeriesId != null and carSeriesId != ''">
+			AND s.car_series_id = #{carSeriesId}
+		</if>
+		<if test="carSeries != null and carSeries != ''">
+			AND s.car_series LIKE '%${carSeries}%'
+		</if>
+    </select>
+    
+    <select id="selectById" parameterType="java.lang.Integer" resultType="com.yicheejia.modules.operate.entity.CarSeriesEntity">
+		SELECT
+			a.car_series_id AS carSeriesId,
+			a.car_manufacturer_id AS carManufacturerId,
+			a.car_series AS carSeries,
+			a.`insert_id` AS insertId,
+			a.insert_time AS insertTime,
+			a.update_id AS updateId,
+			a.update_time AS updateTime,
+			a.is_enabled AS isEnabled,
+			b.car_brand_id AS carBrandId
+		FROM
+			ycej_car_series a
+		LEFT JOIN ycej_car_manufacturer b ON b.car_manufacturer_id = a.car_manufacturer_id
+		WHERE
+			car_series_id = #{carSeriesId}
+	</select>
+
+</mapper>

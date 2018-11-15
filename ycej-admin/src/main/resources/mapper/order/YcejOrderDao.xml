@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.order.dao.YcejOrderDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.order.entity.YcejOrderEntity" id="ycejOrderMap">
+        <result property="id" column="id"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="inventoryId" column="inventory_id"/>
+        <result property="carModelId" column="car_model_id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="sellPrice" column="sell_price"/>
+        <result property="sellType" column="sell_type"/>
+        <result property="insuranceIfout" column="insurance_ifout"/>
+        <result property="commercialIfout" column="commercial_ifout"/>
+        <result property="insureInshop" column="insure_inshop"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="sex" column="sex"/>
+        <result property="contactInformation" column="contact_information"/>
+        <result property="idType" column="id_type"/>
+        <result property="idNo" column="Id_No"/>
+        <result property="appearanceColour" column="appearance_colour"/>
+        <result property="trimColour" column="trim_colour"/>
+        <result property="displacement" column="displacement"/>
+        <result property="orderSource" column="order_source"/>
+        <result property="payTotle" column="Pay_totle"/>
+        <result property="invoicePrice" column="invoice_price"/>
+        <result property="factTotle" column="fact_totle"/>
+        <result property="isqualified" column="isqualified"/>
+        <result property="status" column="status"/>
+        <result property="handoverTime" column="handover_time"/>
+        <result property="confirmTime" column="confirm_time"/>
+        <result property="isDisposable" column="is_disposable"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+	<select id="queryOrder" parameterType="map" resultType="com.yicheejia.modules.order.entity.YcejOrderEntity">
+		SELECT t.id AS id,t.shop_id AS shopId,t.inventory_id AS inventoryId,t.car_model_id AS carModelId,t.order_no AS orderNo,
+		   t.sell_price AS sellPrice,t.sell_type AS sellType,t.insurance_ifout AS insuranceIfout,t.commercial_ifout AS commercialIfout,t.insure_inshop AS insureInshop,t.customer_name AS customerName,
+		   t.sex AS sex,t.contact_information AS contactInformation,t.Id_No AS idNo,t.appearance_colour AS appearanceColour,t.trim_colour AS trimColour,t.displacement AS displacement,
+		   t.order_source AS orderSource,t.Pay_totle AS payTotle,t.fact_totle AS factTotle,t.status AS STATUS,
+		   t.insert_time AS insertTime,t.insert_id AS insertId,t.update_time AS updateTime,t.update_id AS updateId,t.remark AS remark,
+		   t.id_type AS idType,t.commercial_ifout AS commercialIfout ,t.invoice_price AS invoicePrice ,t.isqualified AS isqualified,t.handover_time as handoverTime,t.confirm_time as confirmTime,
+		   t.is_disposable AS isDisposable,
+		   t1.shop_name AS shopName,
+		   t2.car_model AS carModel,
+		   t3.car_series AS carSeries, 
+	       t4.car_manufacturer  AS carManufacturer,   
+		   t5.car_brand AS carBrand,
+		   t6.vin AS VIN,
+		   t6.engine_id AS engineId
+		 FROM
+		      ycej_order t
+			  LEFT JOIN ycej_shop t1 ON t.shop_id = t1.shop_id
+			  LEFT JOIN ycej_car_model t2 ON t.car_model_id = t2.car_model_id  
+			  LEFT JOIN ycej_car_series t3 ON t2.car_series_id = t3.car_series_id 
+			  LEFT JOIN ycej_car_manufacturer t4 ON t3.car_manufacturer_id = t4.car_manufacturer_id  
+			  LEFT JOIN ycej_car_brand t5 ON t4.car_brand_id  = t5.car_brand_id
+			  LEFT JOIN ycej_inventory t6 ON t.inventory_id = t6.inventory_id
+		 WHERE t.status NOT IN ('12','13','14','15','16')
+		<if test="customer !=null and customer !=''">
+			and t.customer_name like '%${customer}%' or t.contact_information like '%${customer}%' or t.order_no LIKE '%${customer}%'
+		</if>
+		<!-- Start增加时间范围搜索 update by lw 2018-10-12 -->
+		<if test="rStartDate != null and rStartDate != ''">
+			AND DATE_FORMAT(t.insert_time,'%Y-%m-%d') >=  DATE_FORMAT(#{rStartDate},'%Y-%m-%d')
+		</if>
+		<if test="rEndDate != null and rEndDate != ''">
+			AND DATE_FORMAT(t.insert_time,'%Y-%m-%d') <![CDATA[<=]]>  DATE_FORMAT(#{rEndDate},'%Y-%m-%d')
+		</if>
+		<if test="status != null and status != ''">
+			AND t.status = #{status}
+		</if>
+		<!-- Start增加时间范围搜索 update by lw 2018-10-12 -->
+		<if test="id !=null and id !=''">
+			and t.id = #{id}
+		</if>
+		<if test="filterFlag == 1">
+       		 AND t.shop_id
+        	<choose>
+	            <when test="shop_id_list != null and shop_id_list.size() > 0">
+	                in
+	                <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+	                    #{shopId}
+	                </foreach>
+	            </when>
+	            <otherwise>
+	                is null
+	            </otherwise>
+        	</choose>
+    	</if>
+			 order by t.update_time desc
+	</select>
+	<!--更新对象 -->
+	<update id="updateOrder" parameterType="map">
+		update ycej_order
+		<trim prefix="set" suffixOverrides=",">
+			<if test="shopId != null">shop_id = #{shopId}, </if>
+			<if test="inventoryId != null">inventory_id = #{inventoryId}, </if>
+			<if test="carModelId != null">car_model_id = #{carModelId}, </if>
+			<if test="sellPrice != null">sell_price = #{sellPrice}, </if>
+			<if test="sellType != null">sell_type = #{sellType}, </if>
+			<if test="insuranceIfout != null">insurance_ifout = #{insuranceIfout}, </if>
+			<if test="commercialIfout != null">commercial_ifout = #{commercialIfout}, </if>
+			<if test="insureInshop != null">insure_inshop = #{insureInshop}, </if>
+			<if test="customerName != null">customer_name = #{customerName}, </if>
+			<if test="sex != null">sex = #{sex}, </if>
+			<if test="contactInformation != null">contact_information = #{contactInformation}, </if>
+			<if test="idType != null">id_type = #{idType}, </if>
+			<if test="idNo != null">Id_No = #{idNo}, </if>
+			<if test="appearanceColour != null">appearance_colour = #{appearanceColour}, </if>
+			<if test="trimColour != null">trim_colour = #{trimColour}, </if>
+			<if test="displacement != null">displacement = #{displacement}, </if>
+			<if test="orderSource != null">order_source = #{orderSource}, </if>
+			<if test="payTotle != null">Pay_totle = #{payTotle}, </if>
+			<if test="invoicePrice != null">invoice_price = #{invoicePrice}, </if>
+			<if test="factTotle != null">fact_totle = #{factTotle}, </if>
+			<if test="isqualified != null and isqualified !=''">isqualified = #{isqualified}, </if>
+			<if test="handoverTime != null and handoverTime !=''">handover_time = #{handoverTime}, </if>
+			<if test="confirmTime != null and confirmTime !=''">confirm_time = #{confirmTime}, </if>
+			<if test="status != null">status = #{status}, </if>
+			<if test="updateTime != null">update_time = now(), </if>
+			<if test="updateId != null">update_id = #{updateId}, </if>
+			<if test="isDisposable != null">is_disposable = #{isDisposable}, </if>
+			<if test="remark != null and remark !=''">remark = #{remark} </if>
+		</trim>
+		<where>id = #{id}</where>
+	</update>
+	
+	<update id="updateOrderByPay" parameterType="map">
+		UPDATE ycej_order
+		  SET status = #{status},
+		      update_time = NOW()
+		WHERE order_no = #{orderNo}
+	</update>
+	<!-- 优壹车拆分 获取列表 -->
+	<select id="queryCheapCarOrder" parameterType="map" resultType="com.yicheejia.modules.order.entity.YcejOrderEntity">
+		SELECT t.id AS id,t.shop_id AS shopId,t.inventory_id AS inventoryId,t.car_model_id AS carModelId,t.order_no AS orderNo,
+		   t.sell_price AS sellPrice,t.sell_type AS sellType,t.insurance_ifout AS insuranceIfout,t.commercial_ifout AS commercialIfout,t.insure_inshop AS insureInshop,t.customer_name AS customerName,
+		   t.sex AS sex,t.contact_information AS contactInformation,t.Id_No AS idNo,t.appearance_colour AS appearanceColour,t.trim_colour AS trimColour,t.displacement AS displacement,
+		   t.order_source AS orderSource,t.Pay_totle AS payTotle,t.fact_totle AS factTotle,t.status AS STATUS,
+		   t.insert_time AS insertTime,t.insert_id AS insertId,t.update_time AS updateTime,t.update_id AS updateId,t.remark AS remark,
+		   t.id_type AS idType,t.commercial_ifout AS commercialIfout ,t.invoice_price AS invoicePrice ,t.isqualified AS isqualified,t.handover_time as handoverTime,t.confirm_time as confirmTime,
+		   t.is_disposable AS isDisposable,
+		   t1.shop_name AS shopName,
+		   t2.car_model AS carModel,
+		   t3.car_series AS carSeries, 
+	       t4.car_manufacturer  AS carManufacturer,   
+		   t5.car_brand AS carBrand,
+		   t6.vin AS VIN,
+		   t6.engine_id AS engineId
+		 FROM
+		      ycej_order t
+			  LEFT JOIN ycej_shop t1 ON t.shop_id = t1.shop_id
+			  LEFT JOIN ycej_car_model t2 ON t.car_model_id = t2.car_model_id  
+			  LEFT JOIN ycej_car_series t3 ON t2.car_series_id = t3.car_series_id 
+			  LEFT JOIN ycej_car_manufacturer t4 ON t3.car_manufacturer_id = t4.car_manufacturer_id  
+			  LEFT JOIN ycej_car_brand t5 ON t4.car_brand_id  = t5.car_brand_id
+			  LEFT JOIN ycej_inventory t6 ON t.inventory_id = t6.inventory_id
+		 WHERE t.status NOT IN ('12','13','14','15','16')
+		 and t.sell_type = '3'
+		<if test="customer !=null and customer !=''">
+			and t.customer_name like '%${customer}%' or t.contact_information like '%${customer}%' or t.order_no LIKE '%${customer}%'
+		</if>
+		<!-- Start增加时间范围搜索 update by lw 2018-10-12 -->
+		<if test="rStartDate != null and rStartDate != ''">
+			AND DATE_FORMAT(t.insert_time,'%Y-%m-%d') >=  DATE_FORMAT(#{rStartDate},'%Y-%m-%d')
+		</if>
+		<if test="rEndDate != null and rEndDate != ''">
+			AND DATE_FORMAT(t.insert_time,'%Y-%m-%d') <![CDATA[<=]]>  DATE_FORMAT(#{rEndDate},'%Y-%m-%d')
+		</if>
+		<if test="status != null and status != ''">
+			AND t.status = #{status}
+		</if>
+		<!-- Start增加时间范围搜索 update by lw 2018-10-12 -->
+		<if test="id !=null and id !=''">
+			and t.id = #{id}
+		</if>
+		<if test="filterFlag == 1">
+       		 AND t.shop_id
+        	<choose>
+	            <when test="shop_id_list != null and shop_id_list.size() > 0">
+	                in
+	                <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+	                    #{shopId}
+	                </foreach>
+	            </when>
+	            <otherwise>
+	                is null
+	            </otherwise>
+        	</choose>
+    	</if>
+			 order by t.update_time desc
+	</select>
+</mapper>

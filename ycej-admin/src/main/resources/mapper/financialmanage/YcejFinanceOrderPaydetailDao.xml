@@ -1,0 +1,738 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.YcejFinanceOrderPaydetailDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.YcejFinanceOrderPaydetailEntity" id="orderPaydetailMap">
+        <result property="orderPayId" column="orderPayId"/>
+        <result property="orderNo" column="orderNo"/>
+        <result property="shop" column="shop"/>
+        <result property="customer" column="customer"/>
+        <result property="telephone" column="telephone"/>
+        <result property="carModel" column="carModel"/>
+        <result property="payWay" column="payWay"/>
+        <result property="payType" column="payType"/>
+        <result property="payAmount" column="payAmount"/>
+        <result property="payDate" column="payDate"/>
+        <result property="payMethod" column="payMethod"/>
+        <result property="payStatu" column="payStatu"/>
+        <result property="paycardno" column="paycardno"/>
+        <result property="insertTime" column="insertTime"/>
+        <result property="updateTime" column="updateTime"/>
+        <result property="insert_id" column="insert_id"/>
+        <result property="update_id" column="update_id"/>
+        <result property="remark" column="remark"/>
+        <result property="sys_ref_no" column="sys_ref_no"/>
+        <result property="orderId" column="orderId"/>
+        <result property="vin" column="vin"/>
+        <result property="carLicenseFee" column="carLicenseFee"/>
+        <result property="carDeposit" column="carDeposit"/>
+        <result property="insurance" column="insurance"/>
+        <result property="charges" column="charges"/>
+        <result property="renewDeposit" column="renewDeposit"/>
+        <result property="discount" column="discount"/>
+        <result property="amount" column="amount"/>
+        <result property="amount2" column="amount2"/>
+    </resultMap>
+
+	<select id="selectAllPage" resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				o.id orderId,
+				p.order_no orderNo,
+				t.name shop,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				o.sell_type payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.amount amount,
+				p.pay_date payDate,
+				p.pay_method payMethod,
+				t2.value payStatu,
+				p.paycardno paycardno,
+				s.name update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				(case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ) discount, 
+				(IFNULL(p.amount,0) + IFNULL((case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ),0)) amount2,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			left join sys_dict t2 on t2.type='pay_detail_status' and t2.code=p.pay_statu
+			INNER JOIN ycej_order o on p.order_no = o.order_no 
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join sys_user s
+			on
+				s.user_id=p.update_id
+			LEFT JOIN(select o.order_no order_no,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m,ycej_order o where o.id=m.order_id GROUP BY m.order_id ) n
+			on n.order_no = p.order_no
+
+			<where> 
+						1=1
+					<if test="startSaleDate!=null and startSaleDate!=''">
+						and p.pay_date &gt;= #{startSaleDate}
+					</if>
+					<if test="endSaleDate!=null and endSaleDate!=''">
+						and p.pay_date &lt;= #{endSaleDate}
+					</if>
+					<if test="pay_method != null and pay_method != ''">
+						and p.pay_method = #{pay_method}
+					</if>
+					<if test="shopName != null and shopName != ''">
+						and t.name like "%"#{shopName}"%"
+					</if>
+					<if test="customer != null and customer != ''">
+						and o.customer_name like "%"#{customer}"%"
+					</if>
+					<choose>
+						<when test="state !=null and state !=''">
+							and p.pay_statu = #{state}
+						</when>
+						<otherwise>
+							and p.pay_statu in (2,3,5)
+						</otherwise>
+					</choose>
+					
+			</where>
+			order by p.update_time desc
+		<!-- 表示财务能看到部分支付、支付完成、财务已审核状态下的数据 -->
+	</select>
+	<!-- 银行转账页面进行名字搜索查询 -->
+	<select id="selectListForQueryName" resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				o.id orderId,
+				p.order_no orderNo,
+				t.name shop,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				o.sell_type payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.amount amount,
+				(case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ) discount,
+				p.pay_date payDate,
+				p.pay_method payMethod,
+				t2.value payStatu,
+				p.paycardno paycardno,
+				s.name update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				(IFNULL(p.amount,0) + IFNULL((case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ),0)) amount2,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			left join sys_dict t2 on t2.type='pay_detail_status' and t2.code=p.pay_statu
+			INNER JOIN ycej_order o on p.order_no = o.order_no 
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join sys_user s
+			on
+				s.user_id=p.update_id
+			LEFT JOIN(select o.order_no order_no,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m,ycej_order o where o.id=m.order_id GROUP BY m.order_id ) n
+			on n.order_no = p.order_no
+
+			<where> 
+						1=1
+					<if test="startSaleDate!=null and startSaleDate!=''">
+						and p.pay_date &gt;= #{startSaleDate}
+					</if>
+					<if test="endSaleDate!=null and endSaleDate!=''">
+						and p.pay_date &lt;= #{endSaleDate}
+					</if>
+					<if test="shopName != null and shopName != ''">
+						and t.name like "%"#{shopName}"%"
+					</if>
+					<if test="customer != null and customer != ''">
+						and o.customer_name like "%"#{customer}"%"
+					</if>
+					<choose>
+						<when test="pay_method !=null and pay_method !='' and pay_method != '01' and pay_method != '02' and pay_method != '03' ">
+									and p.pay_method = #{pay_method}							
+						</when>
+						<otherwise>
+							and p.pay_method in ('04','05')
+						</otherwise>
+					</choose>
+					<choose>
+						<when test="state !=null and state !=''">
+							and p.pay_statu = #{state}
+						</when>
+						<otherwise>
+							and p.pay_statu in (2,3,5)
+						</otherwise>
+					</choose>
+					
+			</where>
+			order by p.update_time desc
+		<!-- 表示财务能看到部分支付、支付完成、财务已审核状态下的数据 -->
+	</select>
+	<select id="selectListByCondition" resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				p.order_no orderNo,
+				t.name shop,
+				o.id orderId,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				t3.value payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.amount amount,
+				p.pay_date payDate,
+				t1.value payMethod,
+				t2.value payStatu,
+				p.paycardno paycardno,
+				s.name update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				(case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ) discount, 
+				(IFNULL(p.amount,0) + IFNULL((case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ),0)) amount2,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			left join sys_dict t1 on t1.type='PayMethod' and t1.code = p.pay_method
+			left join sys_dict t2 on t2.type='pay_detail_status' and t2.code=p.pay_statu
+			INNER JOIN ycej_order o on p.order_no = o.order_no 
+			left join sys_dict t3 on o.sell_type = t3.code and t3.type ='pay_way'
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join sys_user s
+			on
+				s.user_id=p.update_id
+			LEFT JOIN(select o.order_no order_no,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m,ycej_order o where o.id=m.order_id GROUP BY m.order_id ) n
+			on n.order_no = p.order_no
+
+			<where> 
+						1=1
+					<if test="startSaleDate!=null and startSaleDate!=''">
+						and p.pay_date &gt;= #{startSaleDate}
+					</if>
+					<if test="endSaleDate!=null and endSaleDate!=''">
+						and p.pay_date &lt;= #{endSaleDate}
+					</if>
+					<if test="customer != null and customer != ''">
+						and o.customer_name like "%"#{customer}"%"
+					</if>
+					<choose>
+						<when test="state !=null and state !=''">
+							and p.pay_statu = #{state}
+						</when>
+						<otherwise>
+							and p.pay_statu in (2,3,5)
+						</otherwise>
+					</choose>
+					<choose>
+						<when test="pay_method !=null and pay_method !='' and pay_method != '04' and pay_method != '05' ">
+							and p.pay_method = #{pay_method}
+						</when>
+						<otherwise>
+							and p.pay_method in ('01','02','03')
+						</otherwise>
+					</choose>
+					
+			</where>
+			order by p.sys_ref_no desc
+		<!-- 表示财务能看到部分支付、支付完成、财务已审核状态下的数据 -->
+	</select>
+	<!-- POS支付明细 -->
+	<select id="selectAll" resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				p.order_no orderNo,
+				t.name shop,
+				o.id orderId,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				o.sell_type payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.pay_date payDate,
+				p.pay_method payMethod,
+				p.pay_statu payStatu,
+				p.paycardno paycardno,
+				s.name update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			LEFT JOIN ycej_order o
+			on
+				p.order_no = o.order_no
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join sys_user s
+			on
+				s.user_id=p.update_id
+			where p.pay_method='01' and p.pay_statu = '3'
+			<!-- 这里要加入支付方式为POS的条件判断和支付明细的状态 -->
+	</select>
+	<!-- 银行支付明细 -->
+	<select id="selectAllCard" resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				p.order_no orderNo,
+				t.name shop,
+				o.id orderId,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				o.sell_type payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.pay_date payDate,
+				p.pay_method payMethod,
+				p.pay_statu payStatu,
+				p.paycardno paycardno,
+				s.name update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			LEFT JOIN ycej_order o
+			on
+				p.order_no = o.order_no
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join sys_user s
+			on
+				s.user_id=p.update_id
+			where p.pay_method='04' and p.pay_statu = '3'
+			<!-- 这里要加入支付方式为银行的条件判断和支付明细的状态 -->
+	</select>
+	<!-- 更新支付明细数据的状态为财务已审核  多条更新 -->
+	<update id="checkBatchIds">
+			update 
+				ycej_order_paydetail
+			set pay_statu = '5',update_time=sysdate()
+				where ORDER_PAY_ID in 
+		    <foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    </foreach> 
+	</update>
+	<update id="updateStateByIds" parameterType="hashmap">
+			update 
+				ycej_order_paydetail
+			set pay_statu = '5',update_time=sysdate(),update_id = #{updateId}
+				where ORDER_PAY_ID in 
+		    <foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    </foreach> 
+	</update>
+	<update id="updateOneStateByCondition" parameterType="hashmap">
+			update 
+				ycej_order_paydetail
+			set pay_statu = '5',update_time=sysdate(),update_id = #{updateId}
+			<if test="remark !=null and remark !=''">,remark = #{remark}</if>
+				where ORDER_PAY_ID = #{orderPayId}
+	</update>
+	<select id="selectOrderPayAndWaterPay" resultType="map" parameterType="java.lang.String">
+		SELECT
+				IFNULL(f.amount,0) amount1,
+				IFNULL(f.pay_amount,0) pay_amount1,
+				d.id id,
+				p.pay_type pay_type
+			FROM
+				ycej_order_paydetail p
+			LEFT JOIN (
+				SELECT
+					sum(pay_amount) pay_amount,
+					amount,
+					order_no
+				FROM
+					ycej_order_paydetail
+				WHERE
+					pay_statu = '5'	
+					and pay_type != '定金'
+				GROUP BY
+					order_no 
+			) f ON f.order_no = p.order_no
+
+				left join ycej_order d on p.order_no = d.order_no
+			WHERE
+				p.ORDER_PAY_ID = #{id}
+		
+		<!-- 查询的是支付明细中状态为支付完成的数据 -->
+	</select>
+	<!-- 导出 -->
+	<select id="selectExportData"  resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				p.order_no orderNo,
+				t.name shop,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				t3.value payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.amount amount,
+				(case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ) discount,
+				(IFNULL(p.amount,0) + IFNULL((case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ),0)) amount2,
+				(case when p.pay_type = '定金' then 0 ELSE (IFNULL(i.downPayment,0)+IFNULL(i.finalPayment,0)) end ) amount3,
+				p.pay_date payDate,
+				t1.value payMethod,
+				t2.value payStatu,
+				p.paycardno paycardno,
+				(select s.name from sys_user s where s.user_id = p.update_id) update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				(select i.vin vin from ycej_order o,ycej_inventory i where o.order_no = p.order_no and o.inventory_id = i.inventory_id) vin,
+				i.insurance insurance,
+				i.carLicenseFee carLicenseFee,
+				i.chargs chargs,
+				i.carDeposit carDeposit,
+				i.renewDeposit renewDeposit,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			left join sys_dict t1 on t1.type='PayMethod' and t1.code = p.pay_method
+			left join sys_dict t2 on t2.type='pay_detail_status' and t2.code=p.pay_statu
+			INNER JOIN ycej_order o on p.order_no = o.order_no 
+			left join sys_dict t3 on o.sell_type = t3.code and t3.type ='pay_way'
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join (select  h.order_no order_no,sum(carDeposit) carDeposit,sum(insurance) insurance,sum(chargs) chargs,sum(renewDeposit) renewDeposit,sum(carLicenseFee) carLicenseFee,sum(downPayment) downPayment,sum(finalPayment) finalPayment from (
+							select a.order_no order_no,a.amount carDeposit,0 as insurance ,0 chargs,0 renewDeposit,0 carLicenseFee,0 downPayment,0 finalPayment from ycej_order_detail a 
+									where a.pay_type = 06
+					union all
+							select b.order_no order_no, 0 as carDeposit,b.amount insurance,0 chargs,0 renewDeposit,0 carLicenseFee,0 downPayment,0 finalPayment from ycej_order_detail b
+									where b.pay_type = 11
+					union all
+							select c.order_no order_no, 0 carDeposit,0 insurance,c.amount chargs,0 renewDeposit,0 carLicenseFee,0 downPayment,0 finalPayment from ycej_order_detail c
+											where c.pay_type = 10
+					union all
+							select d.order_no order_no, 0 carDeposit,0 insurance,0 chargs,d.amount renewDeposit,0 carLicenseFee,0 downPayment,0 finalPayment from ycej_order_detail d
+											where d.pay_type = 09
+					union all
+							select e.order_no order_no, 0 carDeposit,0 insurance,0 chargs,0 renewDeposit,e.amount carLicenseFee,0 downPayment,0 finalPayment from ycej_order_detail e
+											where e.pay_type = 03
+					union all
+							select f.order_no order_no, 0 carDeposit,0 insurance,0 chargs,0 renewDeposit,0 carLicenseFee,f.amount downPayment,0 finalPayment from ycej_order_detail f
+											where f.pay_type = 02
+					union all
+							select g.order_no order_no, 0 carDeposit,0 insurance,0 chargs,0 renewDeposit,0 carLicenseFee,0 downPayment,g.amount finalPayment from ycej_order_detail g
+											where g.pay_type = 04
+					) h group by h.order_no) i on i.order_no = p.order_no
+			LEFT JOIN(select o.order_no order_no,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m,ycej_order o where o.id=m.order_id GROUP BY m.order_id ) n
+			on n.order_no = p.order_no
+			where p.ORDER_PAY_ID in 
+				<foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    	</foreach> 
+			order by p.update_time desc
+		<!-- 表示财务能看到部分支付、支付完成、财务已审核状态下的数据 -->
+	</select>
+	<!-- 根据支付时间、支付方式获取总账明细-->
+	<select id="selectTotalDetail" resultType="hashmap">
+		SELECT
+			sum(p.pay_amount) pay_amount,
+			p.pay_method pay_method,
+			count(*) count
+		FROM
+			ycej_order_paydetail p
+		LEFT JOIN 
+			ycej_order o on p.order_no = o.order_no
+		<where>
+			1=1
+			<if test="customer != null and customer != ''">
+				and o.customer_name like "%"#{customer}"%"
+			</if>
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and p.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and p.pay_date &lt;= #{endSaleDate}
+			</if>
+			<if test="pay_method != null and pay_method != ''">
+				and p.pay_method = #{pay_method}
+			</if>			
+			<choose>
+				<when test="state !=null and state !=''">
+					and p.pay_statu = #{state}
+				</when>
+				<otherwise>
+					and p.pay_statu in (2,3,5)
+				</otherwise>
+			</choose>
+		</where>
+		group by p.pay_method 
+	</select>
+	<!-- Pos页面系统收款总账明细-->
+	<select id="selectPosTotalDetailByPayMethod" resultType="hashmap">
+		select sum(p.pay_amount) pay_amount,p.pay_method pay_method,count(*)count from ycej_order_paydetail p
+		LEFT JOIN 
+			ycej_order o on p.order_no = o.order_no
+		<where>
+			1=1
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and p.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and p.pay_date &lt;= #{endSaleDate}
+			</if>
+			<if test="customer != null and customer != ''">
+				and o.customer_name like "%"#{customer}"%"
+			</if>
+			<choose>
+				<when test="pay_method !=null and pay_method !='' and pay_method != '04' and pay_method != '05' ">
+							and p.pay_method = #{pay_method}
+				</when>
+				<otherwise>
+					and p.pay_method in ('01','02','03')
+				</otherwise>
+			</choose>	
+			<choose>
+				<when test="state !=null and state !=''">
+					and p.pay_statu = #{state}
+				</when>
+				<otherwise>
+					and p.pay_statu in (2,3,5)
+				</otherwise>
+			</choose>
+		</where>
+		group by p.pay_method 
+	</select>
+	<!-- 根据支付时间、支付方式获取收款总账-->
+	<select id="selectTotal" resultType="hashmap">
+		SELECT
+			sum(p.pay_amount) pay_amount,
+			p.pay_date pay_date,
+			count(*) count
+		FROM
+			ycej_order_paydetail p
+		left join 
+		ycej_order o on o.order_no = p.order_no 
+		<where>
+			1=1
+			<if test="customer != null and customer != ''">
+				and o.customer_name like "%"#{customer}"%"
+			</if>
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and p.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and p.pay_date &lt;= #{endSaleDate}
+			</if>
+			<if test="pay_method!=null and pay_method !=''">
+				and p.pay_method = #{pay_method}
+			</if>
+			<choose>
+				<when test="state !=null and state !=''">
+					and p.pay_statu = #{state}
+				</when>
+				<otherwise>
+					and p.pay_statu in (2,3,5)
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	<!-- POS确认页面获取收款总账-->
+	<select id="selectTotalForPos" resultType="hashmap">
+		SELECT
+			sum(p.pay_amount) pay_amount,
+			p.pay_date pay_date,
+			count(*) count
+		FROM
+			ycej_order_paydetail p
+		left join ycej_order o on o.order_no = p.order_no 
+		<where>
+			1=1
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and p.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and p.pay_date &lt;= #{endSaleDate}
+			</if>
+			<if test="customer != null and customer != ''">
+				and o.customer_name like "%"#{customer}"%"
+			</if>
+			<choose>
+				<when test="pay_method !=null and pay_method !='' and pay_method != '04' and pay_method != '05' ">
+							and p.pay_method = #{pay_method}
+				</when>
+				<otherwise>
+					and p.pay_method in ('01','02','03')
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="state !=null and state !=''">
+					and p.pay_statu = #{state}
+				</when>
+				<otherwise>
+					and p.pay_statu in (2,3,5)
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	<!-- 导入Excel根据支付时间、支付方式获取总账 -->
+	<select id="selectTotalForImport" resultType="hashmap">
+		select sum(pay_amount)pay_amount,pay_date,pay_method,count(*)count from ycej_order_paydetail 
+		<where>
+			1=1
+			<if test="payDate != null and payDate !=''">
+				and pay_date = #{payDate}
+			</if>
+			<if test="pay_method != null and pay_method != ''">
+				 and pay_method = #{pay_method}
+			</if>
+			<choose>
+				<when test="state !=null and state !=''">
+					and pay_statu = #{state}
+				</when>
+				<otherwise>
+					and pay_statu in (2,3,5)
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	<!-- 银行转账 展示系统收款总账 -->
+	<select id="selectBankTotal" resultType="map">
+		SELECT
+			IFNULL(sum(p.pay_amount),0) pay_amount,
+			d.value pay_method,
+			p.pay_date,
+			count(*) count
+		FROM
+			ycej_order_paydetail p
+		left join sys_dict d on d.code = p.pay_method and d.type = 'PayMethod'
+		left join ycej_order o on o.order_no = p.order_no
+		<where>
+			1=1
+				<!-- p.pay_method not in ('01','02','03') -->
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and p.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and p.pay_date &lt;= #{endSaleDate}
+			</if>
+			<if test="customer != null and customer != ''">
+				and o.customer_name like "%"#{customer}"%"
+			</if>
+			<choose>
+				<when test="pay_method !=null and pay_method !='' and pay_method != '01' and pay_method != '02' and pay_method != '03' ">
+							and p.pay_method = #{pay_method}							
+				</when>
+				<otherwise>
+					and p.pay_method in ('04','05')
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="state !=null and state !=''">
+					and p.pay_statu = #{state}
+				</when>
+				<otherwise>
+					and p.pay_statu in (2,3,5)
+				</otherwise>
+			</choose>
+		</where>
+		group by p.pay_method	
+	</select>
+	<select id="selectDetailListForImport" resultMap="orderPaydetailMap">
+			SELECT
+				p.ORDER_PAY_ID orderPayId,
+				o.id orderId,
+				p.order_no orderNo,
+				t.name shop,
+				o.customer_name customer,
+				o.contact_information telephone,
+				d.car_model carModel,
+				o.sell_type payWay,
+				p.pay_type payType,
+				p.pay_amount payAmount,
+				p.amount amount,
+				p.pay_date payDate,
+				p.pay_method payMethod,
+				t2.value payStatu,
+				p.paycardno paycardno,
+				s.name update_id,
+				p.update_time updateTime,
+				p.sys_ref_no sys_ref_no,
+				(case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ) discount, 
+				(IFNULL(p.amount,0) + IFNULL((case when p.pay_type = '定金' then 0 ELSE IFNULL(n.deduction_price,0) end ),0)) amount2,
+				p.remark remark
+			FROM
+				ycej_order_paydetail p
+			left join sys_dict t2 on t2.type='pay_detail_status' and t2.code=p.pay_statu
+			INNER JOIN ycej_order o on p.order_no = o.order_no 
+			LEFT JOIN (select s.shop_name name,o.order_no order_no from ycej_shop s,ycej_order o where o.shop_id=s.shop_id) t 
+			ON
+				t.order_no=p.order_no
+			LEFT JOIN(select m.car_model car_model,o.order_no order_no from ycej_car_model m,ycej_order o where o.car_model_id=m.car_model_id) d
+			ON
+				d.order_no=p.order_no
+			left join sys_user s
+			on
+				s.user_id=p.update_id
+			LEFT JOIN(select o.order_no order_no,SUM(m.deduction_price) deduction_price from ycej_sale_promotion m,ycej_order o where o.id=m.order_id GROUP BY m.order_id ) n
+			on n.order_no = p.order_no
+
+			<where> 
+					1=1
+					<if test="startSaleDate!=null and startSaleDate!=''">
+						and p.pay_date &gt;= #{startSaleDate}
+					</if>
+					<if test="endSaleDate!=null and endSaleDate!=''">
+						and p.pay_date &lt;= #{endSaleDate}
+					</if>
+					<if test="customer != null and customer != ''">
+						and o.customer_name like "%"#{customer}"%"
+					</if>
+					<choose>
+						<when test="pay_method !=null and pay_method !='' and pay_method != '01' and pay_method != '02' and pay_method != '03' ">
+							and p.pay_method = #{pay_method}							
+						</when>
+						<otherwise>
+							and p.pay_method in ('04','05')
+						</otherwise>
+					</choose>
+					<choose>
+						<when test="state !=null and state !=''">
+							and p.pay_statu = #{state}
+						</when>
+						<otherwise>
+							and p.pay_statu in (2,3,5)
+						</otherwise>
+					</choose>
+					
+			</where>
+			order by o.order_no desc
+		<!-- 表示财务能看到部分支付、支付完成、财务已审核状态下的数据 -->
+	</select>
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CautionMoneyDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CautionMoneyEntity" id="cautionMoneyMap">
+        <result property="cautionId" column="caution_id"/>
+        <result property="carNumber" column="car_number"/>
+        <result property="allCaution" column="all_caution"/>
+        <result property="oneCaution" column="one_caution"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="status" column="status"/>
+        <result property="isPay" column="is_pay"/>
+        <result property="brandsId" column="brands_id"/>
+        <result property="carBrands" column="car_brands"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="supplierContact" column="supplier_contact"/>
+        <result property="supplierMobile" column="supplier_mobile"/>
+        <result property="supplierAdd" column="supplier_add"/>
+        <result property="dueBank" column="due_bank"/>
+        <result property="branchBank" column="branch_bank"/>
+        <result property="supplierBankcard" column="supplier_bankcard"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="cauComment" column="cau_comment"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateCautionMoney" parameterType="com.yicheejia.modules.operate.entity.CautionMoneyEntity" >
+		update ycej_caution_money
+		<trim prefix="set" suffixOverrides=",">
+		<if test="cautionId != null">  caution_id = #{cautionId}, </if> 
+		<if test="carNumber != null">  car_number = #{carNumber}, </if> 
+		<if test="allCaution != null">  all_caution = #{allCaution}, </if> 
+		<if test="oneCaution != null">  one_caution = #{oneCaution}, </if> 
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="status != null">  status = #{status}, </if> 
+		<if test="isPay != null">  is_pay = #{isPay}, </if> 
+		<if test="brandsId != null">  brands_id = #{brandsId}, </if> 
+		<if test="carBrands != null">  car_brands = #{carBrands}, </if> 
+		<if test="supplierName != null">  supplier_name = #{supplierName}, </if> 
+		<if test="supplierContact != null">  supplier_contact = #{supplierContact}, </if> 
+		<if test="supplierMobile != null">  supplier_mobile = #{supplierMobile}, </if> 
+		<if test="supplierAdd != null">  supplier_add = #{supplierAdd}, </if> 
+		<if test="dueBank != null">  due_bank = #{dueBank}, </if> 
+		<if test="branchBank != null">  branch_bank = #{branchBank}, </if> 
+		<if test="supplierBankcard != null">  supplier_bankcard = #{supplierBankcard}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="insertId != null">  insert_id = #{insertId}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		<if test="updateId != null">  update_id = #{updateId}, </if> 
+		<if test="cauComment != null">  cau_comment = #{cauComment}, </if> 
+		</trim>
+		where
+    </update>
+    
+    <select id="selectCautionPage" parameterType="map" resultType="com.yicheejia.modules.operate.entity.CautionMoneyEntity">
+    	SELECT
+			a.caution_id AS cautionId,
+			a.car_number AS carNumber,
+			a.all_caution AS allCaution,
+			a.one_caution AS oneCaution,
+			a.supplier_id AS supplierId,
+			a.`status`,
+			a.is_pay AS isPay,
+			a.brands_id AS brandsId,
+			a.car_brands AS carBrands,
+			a.supplier_name AS supplierName,
+			a.supplier_contact AS supplierContact,
+			a.supplier_mobile AS supplierMobile,
+			a.supplier_add AS supplierAdd,
+			a.due_bank AS dueBank,
+			a.branch_bank AS branchBank,
+			a.supplier_bankcard AS supplierBankcard,
+			a.insert_time AS insertTime,
+			a.`insert_id` AS insertId,
+			a.update_time AS updateTime,
+			a.update_id AS updateId,
+			a.cau_comment AS cauComment,
+			a.supplier_type AS supplierType,
+			a.vehicle_type AS vehicleType 
+		FROM
+			ycej_caution_money a
+		WHERE 1=1
+    	<if test="keyword != null and keyword != ''">
+			AND a.supplier_name like '%${keyword}%'
+		</if>
+    </select>
+
+</mapper>

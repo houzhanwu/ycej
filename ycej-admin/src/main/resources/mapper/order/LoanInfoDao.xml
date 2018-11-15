@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.order.dao.LoanInfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.order.entity.LoanInfoEntity" id="loanInfoMap">
+        <result property="loanInfoId" column="loan_info_id"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="idNo" column="id_no"/>
+        <result property="applyNo" column="apply_no"/>
+        <result property="productSolutionId" column="product_solution_id"/>
+        <result property="financeTime" column="finance_time"/>
+        <result property="carPayAmount" column="car_pay_amount"/>
+        <result property="firstPayAmount" column="first_pay_amount"/>
+        <result property="serviceAmount" column="service_amount"/>
+        <result property="gpsFee" column="gps_fee"/>
+        <result property="trafficLiabilityInsurance" column="traffic_liability_insurance"/>
+        <result property="commerceInsurance" column="commerce_insurance"/>
+        <result property="vavt" column="vavt"/>
+        <result property="purchaseTax" column="purchase_tax"/>
+        <result property="installationFee" column="installation_fee"/>
+        <result property="riskMngRst" column="risk_mng_rst"/>
+        <result property="createTime" column="create_time"/>
+        <result property="orderId" column="order_id"/>
+    </resultMap>
+	
+	<select id="selectLoaninfo" resultType="com.yicheejia.modules.order.entity.LoanInfoEntity"   parameterType="map">
+		SELECT 
+		  t.loan_info_id AS loanInfoId,
+		  t.customer_name AS customerName,
+		  t.id_no AS idNo,
+		  t.apply_no AS applyNo,
+		  t.product_solution_id AS productSolutionId,
+		  t1.product_solution_name AS productSolutionName,
+		  t.finance_time AS financeTime,
+		  t.car_pay_amount AS carPayAmount,
+		  t.first_pay_amount AS firstPayAmount,
+		  IFNULL(t.car_pay_amount,0) - IFNULL(t.first_pay_amount,0) AS amount,
+		  t.service_amount AS serviceAmount,
+		  t.gps_fee AS gpsFee,
+		  t.traffic_liability_insurance AS trafficLiabilityInsurance,
+		  t.commerce_insurance AS commerceInsurance,
+		  t.vavt AS vavt,
+	      IFNULL(t.traffic_liability_insurance,0) + IFNULL(t.commerce_insurance,0)+ IFNULL(t.vavt,0) AS insureAmount,
+		  t.purchase_tax AS purchaseTax,
+		  t.installation_fee AS installationFee,
+		  t.risk_mng_rst AS riskMngRst,
+		  t.create_time AS createTime,
+		  t.order_id AS orderId 
+		FROM
+		  ycej_loan_info t
+		 LEFT JOIN ycej_product_info t1 ON t.product_solution_id = t1.product_solution_id
+		WHERE (t1.is_enabled != '0' OR t1.is_enabled IS NULL) AND (t.risk_mng_rst = 1 OR t.risk_mng_rst = 3) AND  t.order_id = #{orderId} ORDER BY t.create_time DESC 
+	</select>
+</mapper>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.YcejFinanceCostDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.YcejFinanceCostEntity" id="ycejFinanceCostMap">
+        <result property="id" column="id"/>
+        <result property="order_no" column="order_no"/>
+        <result property="area" column="area"/>
+        <result property="belongShop" column="belongShop"/>
+        <result property="customer_name" column="customer_name"/>
+        <result property="saleTime" column="saleTime"/>
+        <result property="carModel" column="carModel"/>
+        <result property="sell_type" column="sell_type"/>
+        <result property="total_cost" column="total_cost"/>
+        <result property="nakedCar_purchase_price" column="nakedCar_purchase_price"/>
+        <result property="invoice_price" column="invoice_price"/>
+        <result property="gpsFee" column="gpsFee"/>
+        <result property="carLicenseFee" column="carLicenseFee"/>
+        <result property="awardChannel" column="awardChannel"/>
+        <result property="businessRewards" column="businessRewards"/>
+        <result property="purchaseTax" column="purchaseTax"/>
+        <result property="pipeFee" column="pipeFee"/>
+        <result property="comInsurance" column="comInsurance"/>
+        <result property="returnedInsurance" column="returnedInsurance"/>
+        <result property="returnedGps" column="returnedGps"/>
+        <result property="status" column="status"/>
+        <result property="shopAttr" column="shopAttr"/>
+        <result property="allCharge" column="allCharge"/>
+        <result property="financingDate" column="financingDate"/>
+        <result property="serviceCharge" column="serviceCharge"/>
+        <result property="financialPro" column="financialPro"/>
+        <result property="loanAmount" column="loanAmount"/>
+    </resultMap>
+	
+	<select id="selectAllPage" resultMap="ycejFinanceCostMap">
+		select o.id id,
+			<!-- 订单编号  -->
+			o.order_no order_no,
+			<!-- 大区 -->
+			<!-- s.district_name area, -->
+			<!-- 门店 -->
+			(select s.shop_name from ycej_shop s where s.shop_id=o.shop_id) belongShop,
+			<!-- 客户姓名 -->
+			o.customer_name customer_name,
+			<!-- 销售日期 -->
+			d9.pay_date saleTime,
+			<!-- 车型 -->
+			(select bb.car_model from ycej_car_model bb where bb.car_model_id = o.car_model_id) carModel,
+			<!-- 购买 方式 -->
+			(select sys.value from sys_dict sys where sys.type = 'pay_way' and sys.code = o.sell_type) sell_type,
+			<!-- 总成本 -->
+			o.Pay_totle total_cost,
+			t.financialPro financialPro,
+			IFNULL(t.car_pay_amount,0) - IFNULL(t.first_pay_amount,0) AS loanAmount,
+			IFNULL(t.car_pay_amount,0) - IFNULL(t.first_pay_amount,0) AS allCharge,
+			<!-- 采购成本价 -->
+			(select d10.purch_cost_price from ycej_purchase_detail d10 where d10.inventory_id = o.inventory_id) nakedCar_purchase_price,
+			<!-- 发票价 -->
+			o.invoice_price invoice_price,
+			<!-- 上牌费 -->
+			IFNULL(d4.pay_amount,0) carLicenseFee,
+			<!-- 商业险 -->
+			IFNULL(m1.commerce_insurance,0) comInsurance,
+			<!-- 购置税 -->
+			m3.purchase_tax purchaseTax,
+			<!-- 服务费 -->
+			IFNULL(t.service_amount,0) serviceCharge,
+			<!-- GPS费用 -->
+			IFNULL(t.gps_fee,0) gpsFee,
+			<!-- 门店属性 -->
+			(select s.shop_attr from ycej_shop s where s.shop_id=o.shop_id) shopAttr,
+			
+			<!-- 融资期限 -->
+			t.finance_time financingDate
+ 		from ycej_order o
+			
+			<!-- 根据产品方案id确认金融产品 -->
+			left join (select i.order_id order_id,p.product_solution_name financialPro,i.car_pay_amount car_pay_amount,i.first_pay_amount first_pay_amount,i.service_amount service_amount,i.gps_fee gps_fee,i.finance_time finance_time from ycej_loan_info i,ycej_product_info p where i.product_solution_id= p.product_solution_id order by i.create_time desc limit 1) t  on o.id = t.order_id
+			<!-- 上牌费 -->
+			left JOIN  ycej_order_detail d4 on d4.pay_type=03 and d4.order_no=o.order_no
+			<!-- 商业险 -->
+			left JOIN (select m.order_id order_id,MAX(IFNULL(m.commerce_insurance,0)) commerce_insurance from (select o1.id order_id, d5.pay_amount commerce_insurance from ycej_order_detail d5,ycej_order o1 where d5.pay_type = 07 and o1.order_no = d5.order_no 
+											union all
+									select order_id ,commerce_insurance from ycej_loan_info 
+									) m GROUP BY m.order_id) m1 on m1.order_id = o.id
+			<!-- 购置税 -->
+			left JOIN  (select m2.order_id order_id,MAX(IFNULL(m2.purchase_tax,0)) purchase_tax from (select o2.id order_id, d6.pay_amount purchase_tax from ycej_order_detail d6,ycej_order o2 where d6.pay_type = 05 and o2.order_no = d6.order_no 
+											union all
+									select order_id ,purchase_tax from ycej_loan_info 
+									) m2 GROUP BY m2.order_id) m3 on m3.order_id = o.id
+			
+			<!-- 获取支付状态为已支付的定金交款时间，即销售日期 -->
+			LEFT JOIN ycej_order_detail d9 on d9.pay_type=01 and d9.order_no=o.order_no and d9.pay_statu='3'
+			<where>
+				1=1
+			<if test="startSaleDate!=null and startSaleDate!=''">
+				and d9.pay_date &gt;= #{startSaleDate}
+			</if>
+			<if test="endSaleDate!=null and endSaleDate!=''">
+				and d9.pay_date &lt;= #{endSaleDate}
+			</if>
+			and o.status = '11'
+		</where>
+			order by order_no desc
+	</select>
+	<select id="selectExportData" resultMap="ycejFinanceCostMap">
+		select o.id id,
+			<!-- 订单编号  -->
+			o.order_no order_no,
+			<!-- s.district_name area, -->
+			<!-- 门店 -->
+			(select s.shop_name from ycej_shop s where s.shop_id=o.shop_id) belongShop,
+			<!-- 客户姓名 -->
+			o.customer_name customer_name,
+			<!-- 销售日期 -->
+			d9.pay_date saleTime,
+			<!-- 车型 -->
+			(select bb.car_model from ycej_car_model bb where bb.car_model_id = o.car_model_id) carModel,
+			<!-- 购买 方式 -->
+			(select sys.value from sys_dict sys where sys.type = 'pay_way' and sys.code = o.sell_type) sell_type,
+			<!-- 总成本 -->
+			o.Pay_totle total_cost,
+			t.financialPro financialPro,
+			IFNULL(t.car_pay_amount,0) - IFNULL(t.first_pay_amount,0) AS loanAmount,
+			IFNULL(t.car_pay_amount,0) - IFNULL(t.first_pay_amount,0) AS allCharge,
+			<!-- 采购成本价 -->
+			(select d10.purch_cost_price from ycej_purchase_detail d10 where d10.inventory_id = o.inventory_id) nakedCar_purchase_price,
+			<!-- 发票价 -->
+			o.invoice_price invoice_price,
+			<!-- 上牌费 -->
+			IFNULL(d4.pay_amount,0) carLicenseFee,
+			<!-- 商业险 -->
+			IFNULL(m1.commerce_insurance,0) comInsurance,
+			<!-- 购置税 -->
+			m3.purchase_tax purchaseTax,
+			<!-- 服务费 -->
+			IFNULL(t.service_amount,0) serviceCharge,
+			<!-- GPS费用 -->
+			IFNULL(t.gps_fee,0) gpsFee,
+			<!-- 门店属性 -->
+			(select s.shop_attr from ycej_shop s where s.shop_id=o.shop_id) shopAttr,
+			
+			<!-- 融资期限 -->
+			t.finance_time financingDate
+ 		from ycej_order o
+			
+			<!-- 根据产品方案id确认金融产品 -->
+			left join (select i.order_id order_id,p.product_solution_name financialPro,i.car_pay_amount car_pay_amount,i.first_pay_amount first_pay_amount,i.service_amount service_amount,i.gps_fee gps_fee,i.finance_time finance_time from ycej_loan_info i,ycej_product_info p where i.product_solution_id= p.product_solution_id order by i.create_time desc limit 1) t  on o.id = t.order_id
+			<!-- 上牌费 -->
+			left JOIN  ycej_order_detail d4 on d4.pay_type=03 and d4.order_no=o.order_no
+			<!-- 商业险 -->
+			left JOIN (select m.order_id order_id,MAX(IFNULL(m.commerce_insurance,0)) commerce_insurance from (select o1.id order_id, d5.pay_amount commerce_insurance from ycej_order_detail d5,ycej_order o1 where d5.pay_type = 07 and o1.order_no = d5.order_no 
+											union all
+									select order_id ,commerce_insurance from ycej_loan_info 
+									) m GROUP BY m.order_id) m1 on m1.order_id = o.id
+			<!-- 购置税 -->
+			left JOIN  (select m2.order_id order_id,MAX(IFNULL(m2.purchase_tax,0)) purchase_tax from (select o2.id order_id, d6.pay_amount purchase_tax from ycej_order_detail d6,ycej_order o2 where d6.pay_type = 05 and o2.order_no = d6.order_no 
+											union all
+									select order_id ,purchase_tax from ycej_loan_info 
+									) m2 GROUP BY m2.order_id) m3 on m3.order_id = o.id
+			<!-- 服务费、GPS费用 -->
+			left JOIN ycej_loan_info j on j.order_id = o.id
+			<!-- 获取支付状态为已支付的定金交款时间，即销售日期 -->
+			LEFT JOIN ycej_order_detail d9 on d9.pay_type=01 and d9.order_no=o.order_no and d9.pay_statu='3'
+			
+			where 
+		    	o.id 
+			in
+				<foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    	</foreach> 
+		order by order_no desc
+	</select>
+</mapper>

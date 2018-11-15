@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.order.dao.PutmoneyInfoDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.order.entity.PutmoneyInfoEntity" id="putmoneyInfoMap">
+        <result property="putmoneyInfoId" column="putmoney_info_id"/>
+        <result property="paymentBank" column="payment_bank"/>
+        <result property="paymentAccount" column="payment_account"/>
+        <result property="paymentTotal" column="payment_total"/>
+        <result property="incomeBank" column="income_bank"/>
+        <result property="incomeAccountName" column="income_account_name"/>
+        <result property="incomeAccountNo" column="income_account_no"/>
+        <result property="applyNo" column="apply_no"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="payDate" column="pay_date"/>
+        <result property="idcardNo" column="idcard_no"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updatePutmoneyInfo" parameterType="com.yicheejia.modules.order.entity.PutmoneyInfoEntity" >
+		update ycej_putmoney_info
+		<trim prefix="set" suffixOverrides=",">
+		<if test="putmoneyInfoId != null">  putmoney_info_id = #{putmoneyInfoId}, </if> 
+		<if test="paymentBank != null">  payment_bank = #{paymentBank}, </if> 
+		<if test="paymentAccount != null">  payment_account = #{paymentAccount}, </if> 
+		<if test="paymentTotal != null">  payment_total = #{paymentTotal}, </if> 
+		<if test="incomeBank != null">  income_bank = #{incomeBank}, </if> 
+		<if test="incomeAccountName != null">  income_account_name = #{incomeAccountName}, </if> 
+		<if test="incomeAccountNo != null">  income_account_no = #{incomeAccountNo}, </if> 
+		<if test="applyNo != null">  apply_no = #{applyNo}, </if> 
+		<if test="customerName != null">  customer_name = #{customerName}, </if> 
+		<if test="payDate != null">  pay_date = #{payDate}, </if> 
+		<if test="idcardNo != null">  idcard_no = #{idcardNo}, </if> 
+		<if test="createTime != null">  create_time = #{createTime}, </if> 
+		</trim>
+		where
+    </update>
+	<select id="selectInfoByCondition" resultType="com.yicheejia.modules.order.entity.PutmoneyInfoEntity">
+		select 
+			putmoney_info_id putmoneyInfoId,
+			payment_bank paymentBank, 
+			payment_account paymentAccount,
+			payment_total paymentTotal,
+			income_bank incomeBank,
+			income_account_name incomeAccountName,
+			income_account_no incomeAccountNo,
+			apply_no applyNo,
+			customer_name customerName,
+			pay_date payDate,
+			idcard_no idcardNo,
+			create_time createTime
+		from ycej_putmoney_info 
+		<where>
+			<if test="idcardNo != null and idcardNo != ''">
+				idcard_no = #{idcardNo}
+			</if>
+		</where>
+		order by pay_date desc limit 1
+	</select>
+</mapper>

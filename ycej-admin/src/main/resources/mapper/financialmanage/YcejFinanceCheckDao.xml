@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.YcejFinanceCheckDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.YcejFinanceCheckEntity" id="ycejFinanceCheckMap">
+        <result property="id" column="id"/>
+        <result property="belongShop" column="belongShop"/>
+        <result property="customer_name" column="customer_name"/>
+        <result property="contact_information" column="contact_information"/>
+        <result property="carBrand" column="carBrand"/>
+        <result property="carSeries" column="carSeries"/>
+        <result property="carModel" column="carModel"/>
+        <result property="vin" column="vin"/>
+        <result property="sell_type" column="sell_type"/>
+        <result property="sell_price" column="sell_price"/>
+        <result property="appoint_pay_type" column="appoint_pay_type"/>
+        <result property="appoint_time" column="appoint_time"/>
+        <result property="appoint_money" column="appoint_money"/>
+        <result property="down_pay_type" column="down_pay_type"/>
+        <result property="down_time" column="down_time"/>
+        <result property="down_payment" column="down_payment"/>
+        <result property="insurance" column="insurance"/>
+        <result property="renew_deposit" column="renew_deposit"/>
+        <result property="car_license_fee" column="car_license_fee"/>
+        <result property="handling_charge" column="handling_charge"/>
+        <result property="shop_protected_detail" column="shop_protected_detail"/>
+        <result property="shop_protected_fee" column="shop_protected_fee"/>
+        <result property="total_money" column="total_money"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+	<select id="selectAllPage" resultMap="ycejFinanceCheckMap"> 
+		select  o.id,s.shop_name AS belongShop,o.customer_name customer_name,o.contact_information contact_information,t.b_car_brand as carBrand,t.se_car_series as carSeries,t.m_car_model as carModel,i.vin as vin,o.sell_price sell_price,o.sell_type sell_type,d.pay_method as appoint_pay_type,d.pay_date as appoint_time,
+				d.pay_amount as appoint_money,d1.pay_method down_pay_type,d1.pay_date down_time,d1.pay_amount down_payment,d2.pay_amount as insurance,d3.pay_amount as renew_deposit,d4.pay_amount as car_license_fee,d5.pay_amount as handling_charge,i.dinsurance as shop_protected_detail,i.dinsurance_price as shop_protected_fee,(o.sell_price+d.pay_amount+d1.pay_amount+d2.pay_amount+d3.pay_amount+d4.pay_amount+d5.pay_amount+i.dinsurance_price)as total_money,o.status
+				from ycej_order o 
+				LEFT JOIN ycej_shop s on s.shop_id=o.shop_id
+				LEFT JOIN (select b.car_brand b_car_brand,se.car_series se_car_series,se.car_series_id se_series,m.car_model m_car_model,m.car_model_id m_model from ycej_car_brand b,ycej_car_series se,ycej_car_model m where m.car_series_id=se.car_series_id and se.car_brand_id=b.car_brand_id)t on t.m_model=o.car_model_id
+				LEFT JOIN ycej_inventory i on i.inventory_id=o.inventory_id
+				left JOIN ycej_order_detail d on d.pay_type=1 and d.order_no=o.order_no 
+				left JOIN ycej_order_detail d1 on d1.pay_type=2 and d1.order_no=o.order_no 
+				LEFT JOIN ycej_order_detail d2 on d2.pay_type=3 and d2.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d3 on d3.pay_type=4 and d3.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d4 on d4.pay_type=5 and d4.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d5 on d5.pay_type=6 and d5.order_no=o.order_no
+				<where>
+						1=1
+					<if test="startTime!=null">
+						and d.pay_type = 1 and d.pay_date &gt; #{startTime}
+					</if> 
+					<if test="endTime!=null">
+						and d.pay_type = 1 and d.pay_date &lt; #{endTime}
+					</if>
+					<if test="startTime2!=null">
+						and d1.pay_type = 2 and d1.pay_date &gt; #{startTime2}
+					</if> 
+					<if test="endTime2!=null">
+						and d1.pay_type = 2 and d1.pay_date &lt; #{endTime2}
+					</if>
+					<if test="customer_name!=null and customer_name!=''">
+						and o.customer_name LIKE CONCAT(CONCAT('%',#{customer_name},'%'))
+					</if>
+					<if test="shop_name!=null and shop_name!=''">
+						and s.shop_name LIKE CONCAT(CONCAT('%',#{shop_name},'%'))
+					</if>
+					<!-- 后期需要加上 财务能看到什么状态的订单 -->
+				</where>
+	</select>
+	<select id="selectDetailPage" resultMap="ycejFinanceCheckMap"> 
+		select  o.id,s.shop_name AS belongShop,t.b_car_brand as carBrand,t.se_car_series as carSeries,t.m_car_model as carModel,o.order_no order_no,o.sell_price sell_price,o.sell_type sell_type,o.customer_name customer_name,o.contact_information contact_information,i.vin as vin,d.pay_method as appoint_pay_type,d.pay_date as appoint_time,
+				d.pay_amount as appoint_money,d1.pay_method down_pay_type,d1.pay_date down_time,d1.pay_amount down_payment,d2.pay_amount as insurance,d3.pay_amount as renew_deposit,d4.pay_amount as car_license_fee,d5.pay_amount as handling_charge,i.dinsurance as shop_protected_detail,i.dinsurance_price as shop_protected_fee,(o.sell_price+d.pay_amount+d1.pay_amount+d2.pay_amount+d3.pay_amount+d4.pay_amount+d5.pay_amount+i.dinsurance_price)as total_money,o.status
+				from ycej_order o 
+				LEFT JOIN ycej_shop s on s.shop_id=o.shop_id
+				LEFT JOIN (select b.car_brand b_car_brand,se.car_series se_car_series,se.car_series_id se_series,m.car_model m_car_model,m.car_model_id m_model from ycej_car_brand b,ycej_car_series se,ycej_car_model m where m.car_series_id=se.car_series_id and se.car_brand_id=b.car_brand_id)t on t.m_model=o.car_model_id
+				LEFT JOIN ycej_inventory i on i.inventory_id=o.inventory_id
+				left JOIN ycej_order_detail d on d.pay_type=1 and d.order_no=o.order_no 
+				left JOIN ycej_order_detail d1 on d1.pay_type=2 and d1.order_no=o.order_no 
+				LEFT JOIN ycej_order_detail d2 on d2.pay_type=3 and d2.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d3 on d3.pay_type=4 and d3.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d4 on d4.pay_type=5 and d4.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d5 on d5.pay_type=6 and d5.order_no=o.order_no
+				<where> 
+						1=1
+					<if test="startTime!=null">
+						and d.pay_type = 1 and d.pay_date &gt; #{startTime}
+					</if> 
+					<if test="endTime!=null">
+						and d.pay_type = 1 and d.pay_date &lt; #{endTime}
+					</if>
+					<if test="startTime2!=null">
+						and d1.pay_type = 2 and d1.pay_date &gt; #{startTime2}
+					</if> 
+					<if test="endTime2!=null">
+						and d1.pay_type = 2 and d1.pay_date &lt; #{endTime2}
+					</if>
+					<if test="customer_name!=null and customer_name!=''">
+						and o.customer_name LIKE CONCAT(CONCAT('%',#{customer_name},'%'))
+					</if>
+					<if test="shop_name!=null and shop_name!=''">
+						and s.shop_name LIKE CONCAT(CONCAT('%',#{shop_name},'%'))
+					</if>
+					<!-- 后期需要加上 订单完成的状态 -->
+				</where>
+	</select>
+	
+	<update id="checkByIds">
+		update 
+			ycej_order
+		set status = #{state} 
+		where id in
+		    <foreach collection="asList" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    </foreach>
+	
+	</update>
+	<update id="returnByIds">
+		update 
+			ycej_order
+		set status = #{state} 
+		where id in
+		    <foreach collection="asList" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    </foreach>
+	
+	</update>
+	<update id="accountCheckByIds">
+		update 
+			ycej_order
+		set status = #{state} 
+		where id in
+		    <foreach collection="asList" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        #{item}
+		    </foreach>
+	
+	</update>
+	<select id="getDataForExcel" resultMap="ycejFinanceCheckMap">
+		select  o.id as id,s.shop_name AS belongShop,t.b_car_brand as carBrand,t.se_car_series as carSeries,t.m_car_model as carModel,o.order_no order_no,o.sell_price sell_price,o.sell_type sell_type,o.customer_name customer_name,o.contact_information contact_information,i.vin as vin,d.pay_method as appoint_pay_type,d.pay_date as appoint_time,
+				d.pay_amount as appoint_money,d1.pay_method down_pay_type,d1.pay_date down_time,d1.pay_amount down_payment,d2.pay_amount as insurance,d3.pay_amount as renew_deposit,d4.pay_amount as car_license_fee,d5.pay_amount as handling_charge,i.dinsurance as shop_protected_detail,i.dinsurance_price as shop_protected_fee,(o.sell_price+d.pay_amount+d1.pay_amount+d2.pay_amount+d3.pay_amount+d4.pay_amount+d5.pay_amount+i.dinsurance_price)as total_money,o.status
+		from ycej_order o 
+				LEFT JOIN ycej_shop s on s.shop_id=o.shop_id
+				LEFT JOIN (select b.car_brand b_car_brand,se.car_series se_car_series,se.car_series_id se_series,m.car_model m_car_model,m.car_model_id m_model from ycej_car_brand b,ycej_car_series se,ycej_car_model m where m.car_series_id=se.car_series_id and se.car_brand_id=b.car_brand_id)t on t.m_model=o.car_model_id
+				LEFT JOIN ycej_inventory i on i.inventory_id=o.inventory_id
+				left JOIN ycej_order_detail d on d.pay_type=1 and d.order_no=o.order_no 
+				left JOIN ycej_order_detail d1 on d1.pay_type=2 and d1.order_no=o.order_no 
+				LEFT JOIN ycej_order_detail d2 on d2.pay_type=3 and d2.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d3 on d3.pay_type=4 and d3.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d4 on d4.pay_type=5 and d4.order_no=o.order_no
+				LEFT JOIN ycej_order_detail d5 on d5.pay_type=6 and d5.order_no=o.order_no
+		where 
+				o.id 
+		in
+				<foreach collection="list" index="index" item="item" 
+		        separator="," open="(" close=")">
+		        	#{item}
+		    	</foreach> 
+	</select>
+	
+</mapper>

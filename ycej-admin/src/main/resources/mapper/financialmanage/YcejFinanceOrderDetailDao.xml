@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.YcejFinanceOrderDetailDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.YcejFinanceOrderDetailEntity" id="orderDetailMap">
+        <result property="orderDetailId" column="orderDetailId"/>
+        <result property="orderNo" column="orderNo"/>
+        <result property="shop" column="shop"/>
+        <result property="customer" column="customer"/>
+        <result property="telephone" column="telephone"/>
+        <result property="carModel" column="carModel"/>
+        <result property="payWay" column="payWay"/>
+        <result property="payType" column="payType"/>
+        <result property="amount" column="amount"/>
+        <result property="payAmount" column="payAmount"/>
+        <result property="payMethod" column="payMethod"/>
+        <result property="balance" column="balance"/>
+        <result property="payDate" column="payDate"/>
+    </resultMap>
+
+	<select id="selectAllPage" resultMap="orderDetailMap">
+		SELECT
+			d.ORDER_DETAIL_ID orderDetailId,
+			d.order_no orderNo,
+			t.shop_name shop,
+			o1.customer_name customer,
+			o1.contact_information telephone,
+			e.car_model carModel,
+			i.value payMethod,
+			c.value payType,
+			d.amount amount,
+			d.pay_amount payAmount,
+			t3.value payWay,
+			(d.amount - d.pay_amount) balance,
+			d.pay_date payDate
+		FROM
+			ycej_order_detail d 
+		left join 
+			(SELECT o.order_no order_no,s.shop_name shop_name	FROM ycej_order o,ycej_shop s WHERE	o.shop_id = s.shop_id) t 
+		ON 
+			t.order_no = d.order_no 
+		left join 
+			ycej_order o1 ON o1.order_no = d.order_no 
+		left join 
+			(SELECT m.car_model car_model,o2.order_no order_no FROM ycej_order o2,ycej_car_model m WHERE o2.car_model_id = m.car_model_id) e 
+		ON 
+			e.order_no = d.order_no
+		left join sys_dict c on c.type = 'pay_type' and c.code = d.pay_type
+		left join sys_dict i on i.type = 'PayMethod' and i.code = d.pay_method  
+		left join (select t2.value value,t1.order_no order_no from ycej_order t1,sys_dict t2 where t2.type='pay_way' and t2.code = t1.sell_type) t3
+			on t3.order_no = d.order_no
+		
+		<where>
+			1=1
+			<if test="shop_name!=null and shop_name!=''">
+				and t.shop_name LIKE CONCAT(CONCAT('%',#{shop_name},'%')) or o1.customer_name LIKE CONCAT(CONCAT('%',#{shop_name},'%'))
+			</if>
+			<if test="sell_type!=null and sell_type!=''">
+				and o1.sell_type = #{sell_type}
+			</if>
+			
+		</where>
+		order by d.update_time desc
+	</select>
+	
+</mapper>

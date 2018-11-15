@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.financialmanage.dao.ImportDataDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.financialmanage.entity.ImportDataEntity" id="importDataMap">
+        <result property="id" column="id"/>
+        <result property="batchId" column="batch_id"/>
+        <result property="payId" column="pay_id"/>
+        <result property="terminalNo" column="terminal_no"/>
+        <result property="tradeDate" column="trade_date"/>
+        <result property="tradeMoney" column="trade_money"/>
+        <result property="accountName" column="account_name"/>
+        <result property="accountNo" column="account_no"/>
+        <result property="sysReferenceNumber" column="sys_reference_number"/>
+        <result property="bankSerialNumber" column="bank_serial_number"/>
+        <result property="remark" column="remark"/>
+        <result property="moneyRemark" column="money_remark"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="payType" column="pay_type"/>
+        <result property="accountType" column="account_type"/>
+        <result property="merchantFees" column="merchant_fees"/>
+        <result property="settlementAmount" column="settlement_amount"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateImportData" parameterType="com.yicheejia.modules.financialmanage.entity.ImportDataEntity" >
+		update ycej_import_data
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="batchId != null">  batch_id = #{batchId}, </if> 
+		<if test="payId != null">  pay_id = #{payId}, </if> 
+		<if test="terminalNo != null">  terminal_no = #{terminalNo}, </if> 
+		<if test="tradeDate != null">  trade_date = #{tradeDate}, </if> 
+		<if test="tradeMoney != null">  trade_money = #{tradeMoney}, </if> 
+		<if test="accountName != null">  account_name = #{accountName}, </if> 
+		<if test="accountNo != null">  account_no = #{accountNo}, </if> 
+		<if test="sysReferenceNumber != null">  sys_reference_number = #{sysReferenceNumber}, </if> 
+		<if test="bankSerialNumber != null">  bank_serial_number = #{bankSerialNumber}, </if> 
+		<if test="remark != null">  remark = #{remark}, </if> 
+		<if test="moneyRemark != null">  money_remark = #{moneyRemark}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="insertId != null">  insert_id = #{insertId}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		<if test="updateId != null">  update_id = #{updateId}, </if> 
+		<if test="payType != null">  pay_type = #{payType}, </if> 
+		</trim>
+		where
+    </update>
+	<select id="selectPaymentDetail" resultType="com.yicheejia.modules.financialmanage.entity.ImportDataEntity">
+		select id,batch_id batchId,pay_id payId,terminal_no terminalNo,trade_date tradeDate,trade_money tradeMoney,account_type accountType,
+		account_name accountName,account_no accountNo,sys_reference_number sysReferenceNumber,bank_serial_number bankSerialNumber,
+		remark,money_remark moneyRemark,insert_time insertTime,insert_id insertId,update_time updateTime,update_id updateId,pay_type payType,
+		merchant_fees merchantFees,settlement_amount settlementAmount
+		from ycej_import_data 
+		<where>
+			<if test="pay_id != null and pay_id != ''">
+				pay_id = #{pay_id}
+			</if>
+		</where>
+	</select>
+	<!-- POS总账 -->
+	<select id="selectTotalForPos"  resultType="map">
+		select trade_date,count(*) count,sum(trade_money) trade_money,sum(merchant_fees) merchant_fees,sum(settlement_amount) settlement_amount from ycej_import_data
+		<where>
+			1=1
+			<if test="payDate != null and payDate !=''">
+				and trade_date = #{payDate}
+			</if>
+			<if test="pay_type != null and pay_type != ''">
+				and pay_type =#{pay_type}
+			</if>
+		</where>
+	</select>
+	<!-- 根据账户类型获取银盛总账明细 -->
+	<select id="selectTotalForPosByAccountType" resultType="map">
+		SELECT
+			account_type,
+			count(*) count,
+			sum(trade_money) trade_money,
+			sum(merchant_fees) merchant_fees,
+			sum(settlement_amount) settlement_amount
+		FROM
+			ycej_import_data
+		<where>
+			1=1
+			<if test="payDate != null and payDate !=''">
+				and trade_date = #{payDate}
+			</if>
+			<if test="pay_type != null and pay_type != ''">
+				and pay_type =#{pay_type}
+			</if>
+		</where>
+		group by account_type
+	</select>
+	<!-- 从数据库查询导入pos明细 -->
+	<select id="selectListByCondition" resultType="com.yicheejia.modules.financialmanage.entity.ImportDataEntity">
+		SELECT
+		id,batch_id batchId,pay_id payId,terminal_no terminalNo,trade_date tradeDate,trade_money tradeMoney,account_type accountType,
+		account_name accountName,account_no accountNo,sys_reference_number sysReferenceNumber,bank_serial_number bankSerialNumber,
+		remark,money_remark moneyRemark,insert_time insertTime,insert_id insertId,update_time updateTime,update_id updateId,pay_type payType,
+		merchant_fees merchantFees,settlement_amount settlementAmount
+		FROM
+			ycej_import_data
+		<where>
+			1=1
+			<if test="payDate != null and payDate !=''">
+				and trade_date = #{payDate}
+			</if>
+			<if test="pay_type != null and pay_type != ''">
+				and pay_type =#{pay_type}
+			</if>
+		</where>
+		order by sys_reference_number desc
+	</select>
+	<select id="selectBankTotalByImport">
+		SELECT
+			IFNULL(sum(trade_money),0) trade_money,
+			trade_date,
+			count(*) count
+		FROM
+			ycej_import_data 
+		<where>
+			pay_type = '2'
+			<if test="payDate !=null and payDate !=''">
+				and trade_date = #{payDate} 
+			</if>
+		</where>
+	</select>
+</mapper>

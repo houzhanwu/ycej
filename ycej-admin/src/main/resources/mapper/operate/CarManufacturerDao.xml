@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarManufacturerDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarManufacturerEntity" id="carManufacturerMap">
+        <result property="carManufacturerId" column="car_manufacturer_id"/>
+        <result property="carManufacturer" column="car_manufacturer"/>
+        <result property="carBrandId" column="car_brand_id"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isEnabled" column="is_enabled"/>
+    </resultMap>
+
+    <select id="carManufacturerList" resultMap="carManufacturerMap">
+    	SELECT 
+    	s.car_manufacturer_id,b.car_brand,s.car_manufacturer,s.insert_id,s.insert_time,s.update_id,s.update_time,s.is_enabled 
+    	FROM 
+    	ycej_car_manufacturer s 
+    	LEFT JOIN 
+    	ycej_car_brand b 
+    	ON 
+    	s.car_brand_id = b.car_brand_id
+    	WHERE 1=1 
+    	<if test="keyword != null and keyword != ''">
+			AND s.car_manufacturer LIKE '%${keyword}%' or b.car_brand LIKE '%${keyword}%'
+		</if>
+		ORDER BY s.insert_time DESC ,s.update_time DESC	
+<!-- 		<if test="carBrand != null and carBrand != ''"> -->
+<!-- 			AND b.car_brand LIKE '%${carBrand}%' -->
+<!-- 		</if> -->
+    </select>
+    
+    <select id="getCarManufacturers" resultType="java.util.Map" parameterType="map"> 
+        SELECT b.car_brand_id AS carBrandId, b.car_manufacturer AS carManufacturer,
+        b.car_manufacturer_id AS carManufacturerId FROM ycej_car_manufacturer b WHERE b.is_enabled = 1
+		<if test="carBrandId != null and carBrandId != ''">
+			AND b.car_brand_id = #{carBrandId}
+		</if>
+		<if test="carManufacturerId != null and carManufacturerId != ''">
+			AND b.car_manufacturer_id = #{carManufacturerId}
+		</if>
+        <if test="carManufacturer != null and carManufacturer != ''">
+			AND b.car_manufacturer LIKE '%${carManufacturer}%'
+		</if>
+    </select>
+
+</mapper>

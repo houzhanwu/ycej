@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.shop.dao.CustomerTrackDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.shop.entity.CustomerTrackEntity" id="customerTrackMap">
+        <result property="customerId" column="customer_id"/>
+        <result property="trackPerson" column="track_person"/>
+        <result property="trackTime" column="track_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    
+
+
+</mapper>

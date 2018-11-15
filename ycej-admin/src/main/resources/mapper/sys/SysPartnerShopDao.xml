@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.sys.dao.SysPartnerShopDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.sys.entity.SysPartnerShopEntity" id="sysPartnerShopMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="shopId" column="shop_id"/>
+    </resultMap>
+
+	<select id="queryPartnerShopIdList" resultType="java.lang.Integer">
+		select shop_id from sys_partner_shop where user_id = #{userId}
+	</select>
+
+	<delete id="deleteBatch">
+		delete from sys_partner_shop where shop_id in
+		<foreach item="shopId" collection="array" open="(" separator="," close=")">
+			#{shopId}
+		</foreach>
+	</delete>
+
+</mapper>

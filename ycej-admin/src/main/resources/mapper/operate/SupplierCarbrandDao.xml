@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.SupplierCarbrandDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.SupplierCarbrandEntity" id="supplierCarbrandMap">
+        <result property="id" column="id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="carBrand" column="car_brand"/>
+        <result property="carBrandName" column="car_brand_name"/>
+        <result property="insertUser" column="insert_user"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateSupplierCarbrand" parameterType="com.yicheejia.modules.operate.entity.SupplierCarbrandEntity" >
+		update ycej_supplier_carbrand
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="supplierName != null">  supplier_name = #{supplierName}, </if> 
+		<if test="carBrand != null">  car_brand = #{carBrand}, </if> 
+		<if test="carBrandName != null">  car_brand_name = #{carBrandName}, </if> 
+		<if test="insertUser != null">  insert_user = #{insertUser}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="updateUser != null">  update_user = #{updateUser}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		</trim>
+		where
+    </update>
+	<select id="selectDataByMap" resultType="com.yicheejia.modules.operate.entity.SupplierCarbrandEntity">
+		select 
+			car_brand_name name,car_brand value
+		from ycej_supplier_carbrand 
+			where 
+		supplier_id =#{supplierId}
+	</select>
+</mapper>

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.AllotDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.AllotEntity" id="allotMap">
+        <result property="allotId" column="allot_id"/>
+        <result property="vin" column="vin"/>
+        <result property="allotDate" column="allot_date"/>
+        <result property="allotName" column="allot_name"/>
+        <result property="allotMobile" column="allot_mobile"/>
+        <result property="allotFrom" column="allot_from"/>
+        <result property="allotTo" column="allot_to"/>
+        <result property="allotWith" column="allot_with"/>
+        <result property="carCondition" column="car_condition"/>
+        <result property="comment" column="comment"/>
+        <result property="certificate" column="certificate"/>
+        <result property="mailDate" column="mail_date"/>
+        <result property="expressCompany" column="express_company"/>
+        <result property="courierNumber" column="courier_number"/>
+        <result property="allotFromConfirm" column="allot_from_confirm"/>
+        <result property="allotFromConfirmId" column="allot_from_confirm_id"/>
+        <result property="allotFromConfirmDate" column="allot_from_confirm_date"/>
+        <result property="allotToConfirm" column="allot_to_confirm"/>
+        <result property="allotToConfirmId" column="allot_to_confirm_id"/>
+        <result property="allotToConfirmDate" column="allot_to_confirm_date"/>
+        <result property="allotStatus" column="allot_status"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="isReceived" column="is_received"/>
+        <result property="vinPhotoAdd" column="vin_photo_add"/>
+        <result property="fileId" column="file_id"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateallot" parameterType="com.yicheejia.modules.operate.entity.AllotEntity" >
+		update ycej_allot
+		<trim prefix="set" suffixOverrides=",">
+		<if test="vin != null">  vin = #{vin}, </if> 
+		<if test="allotDate != null">  allot_date = #{allotDate}, </if> 
+		<if test="allotName != null">  allot_name = #{allotName}, </if> 
+		<if test="allotMobile != null">  allot_mobile = #{allotMobile}, </if> 
+		<if test="allotFrom != null">  allot_from = #{allotFrom}, </if> 
+		<if test="allotTo != null">  allot_to = #{allotTo}, </if> 
+		<if test="allotWith != null">  allot_with = #{allotWith}, </if> 
+		<if test="carCondition != null">  car_condition = #{carCondition}, </if> 
+		<if test="comment != null">  comment = #{comment}, </if> 
+		<if test="certificate != null">  certificate = #{certificate}, </if> 
+		<if test="mailDate != null">  mail_date = #{mailDate}, </if> 
+		<if test="expressCompany != null">  express_company = #{expressCompany}, </if> 
+		<if test="courierNumber != null">  courier_number = #{courierNumber}, </if> 
+		<if test="allotFromConfirm != null">  allot_from_confirm = #{allotFromConfirm}, </if> 
+		<if test="allotFromConfirmId != null">  allot_from_confirm_id = #{allotFromConfirmId}, </if> 
+		<if test="allotFromConfirmDate != null">  allot_from_confirm_date = #{allotFromConfirmDate}, </if> 
+		<if test="allotToConfirm != null">  allot_to_confirm = #{allotToConfirm}, </if> 
+		<if test="allotToConfirmId != null">  allot_to_confirm_id = #{allotToConfirmId}, </if> 
+		<if test="allotToConfirmDate != null">  allot_to_confirm_date = #{allotToConfirmDate} </if> 
+		<if test="allotStatus != null">  allot_status = #{allotStatus} </if> 
+		<if test="vinPhotoAdd != null">  vin_photo_add = #{vinPhotoAdd} </if> 
+		<if test="fileId != null">  file_id = #{fileId} </if> 
+		<if test="isReceived != null">  is_received = #{isReceived} </if> 
+		</trim>
+		where allot_id = #{allotId}
+    </update>
+    
+    <select id="allotList" resultType="com.yicheejia.modules.operate.entity.AllotEntity">
+		SELECT
+			a.allot_id AS allotId,
+			a.vin,
+			a.allot_date AS allotDate,
+			d.`name` AS allotName,
+			d.mobile AS allotMobile,
+			case when b.shop_name is null then c.warehouse_name else b.shop_name END  AS allotFromName,
+			(SELECT b.shop_name FROM ycej_shop b WHERE a.allot_to = b.shop_id) AS allotToName,
+			a.allot_with AS allotWith,
+			a.car_condition AS carCondition,
+			a.`comment`,
+			a.certificate,
+			a.mail_date AS mailDate,
+			a.express_company AS expressCompany,
+			a.courier_number AS courierNumber,
+			a.allot_from_confirm AS allotFromConfirm,
+			a.allot_from_confirm_id AS allotFromConfirmId,
+			a.allot_from_confirm_date AS allotFromConfirmDate,
+			a.allot_to_confirm AS allotToConfirm,
+			a.allot_to_confirm_id AS allotToConfirmId,
+			a.allot_to_confirm_date AS allotToConfirmDate,
+			a.allot_status AS allotStatus
+		FROM
+			ycej_allot a
+			LEFT JOIN ycej_shop b on a.allot_from = b.shop_id
+     		LEFT JOIN ycej_warehouse_management c on a.allot_from = c.id
+			LEFT JOIN sys_user d ON a.allot_name = d.user_id
+			WHERE 1=1
+		<if test="keyword != null and keyword != ''">
+			and a.vin LIKE '%${keyword}%'
+		</if>
+		<if test="allotDate != null and allotDate != ''">
+			AND DATE_FORMAT(a.allot_date,'%Y-%m-%d') =  DATE_FORMAT(#{allotDate},'%Y-%m-%d')
+		</if>
+		<if test="filterFlag == 1">
+	 		<choose>
+	            <when test="shop_id_list != null and shop_id_list.size() > 0">
+	                AND a.allot_from in
+	                <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+	                    #{shopId}
+	                </foreach>
+	                OR a.allot_to in 
+	                <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+	                    #{shopId}
+	                </foreach>
+	            </when>
+	            <otherwise>
+	<!--                 is null -->
+	            </otherwise>
+	        </choose>
+        </if>
+		ORDER BY a.insert_time DESC
+    </select>
+    
+    <update id="updateByVinFrom" parameterType="com.yicheejia.modules.operate.entity.AllotEntity">
+		    UPDATE ycej_allot 
+		    SET allot_from_confirm= #{allotFromConfirm},
+		    allot_from_confirm_id = #{allotFromConfirmId},
+		    allot_from_confirm_date = #{allotFromConfirmDate},
+		    allot_status = #{allotStatus}
+		    WHERE allot_id = #{allotId}
+    </update>
+    
+    <update id="updateByVinTo" parameterType="com.yicheejia.modules.operate.entity.AllotEntity">
+		    UPDATE ycej_allot a,ycej_inventory b
+		    SET a.allot_to_confirm= #{allotToConfirm},
+		    a.allot_to_confirm_id = #{allotToConfirmId},
+		    a.allot_to_confirm_date = #{allotToConfirmDate},
+		    b.shop_id = a.allot_to,
+		    b.warehouse_id = NULL,
+		    b.car_status = 1,
+		    a.allot_status = #{allotStatus},
+		    a.is_received = #{isReceived}
+		    WHERE 1=1
+		    AND a.allot_id = #{allotId}
+		    AND b.vin = #{vin}
+    </update>
+
+	<update id="updateCarStatus" parameterType="com.yicheejia.modules.operate.entity.AllotEntity">
+   		UPDATE ycej_inventory SET car_status = 2 WHERE vin = #{vin}
+    </update>
+    
+	<select id="queryShopId" resultType="String" parameterType ="String">
+			SELECT allot_to AS allotTo FROM ycej_allot WHERE allot_id = #{allotId}
+	</select>
+	
+	<select id="selectById" resultType="com.yicheejia.modules.operate.entity.AllotEntity">
+		SELECT
+			t.allot_id AS allotId,
+			t.vin,
+			t.allot_date AS allotDate,
+			t.allot_name AS allotName,
+			t.allot_mobile AS allotMobile,
+			t.allot_from AS allotFrom,
+			t.allot_to AS allotTo,
+			t.allot_with AS allotWith,
+			t.car_condition AS carCondition,
+			t.`comment`,
+			t.certificate,
+			t.mail_date AS mailDate,
+			t.express_company AS expressCompany,
+			t.courier_number AS courierNumber,
+			t.allot_from_confirm AS allotFromConfirm,
+			(SELECT f.`name` FROM sys_user f WHERE t.allot_from_confirm_id = f.user_id) AS allotFromConfirmId,
+			t.allot_from_confirm_date AS allotFromConfirmDate,
+			t.allot_to_confirm AS allotToConfirm,
+			(SELECT f.`name` FROM sys_user f WHERE t.allot_to_confirm_id = f.user_id) AS allotToConfirmId,
+			t.allot_to_confirm_date AS allotToConfirmDate,
+			t.allot_status AS allotStatus,
+			t.`type`,
+			a.inventory_id AS inventoryId,
+			e.car_brand AS carBrand,
+			d.car_manufacturer AS carManufacturer,
+			c.car_series AS carSeries,
+			b.car_model AS carModel,
+			f.color AS carColour,
+			b.car_emissions AS carEmissions,
+			a.cost_price AS costPrice,
+			a.sale_price AS salePrice,
+			a.receipt_price AS receiptPrice,
+			a.engine_id AS engineId,
+			a.certificate_add AS certificateAdd,
+			a.car_status AS carStatus
+			,t.is_received AS isReceived
+			,t.vin_photo_add AS vinPhotoAdd
+			,t.file_id AS fileId
+		FROM
+			ycej_allot t
+		LEFT JOIN ycej_inventory a ON t.vin = a.vin
+		LEFT JOIN ycej_car_model b ON a.car_model = b.car_model_id
+		LEFT JOIN ycej_car_series c ON a.car_series = c.car_series_id
+		LEFT JOIN ycej_car_manufacturer d ON a.car_manufacturer = d.car_manufacturer_id
+		LEFT JOIN ycej_car_brand e ON a.car_brand = e.car_brand_id
+		LEFT JOIN ycej_car_color f ON a.car_colour = f.id
+		WHERE
+			allot_id = #{allotId}
+	</select>
+<!--     <update id="updateWarehouseToShop"> -->
+    	
+<!--     </update> -->
+
+	<!-- 车辆查询中根据车架号获取调拨信息 -->
+    <select id="selectByVin" resultType="com.yicheejia.modules.operate.entity.AllotEntity">
+    	SELECT
+			a.allot_id AS allotId,
+			a.vin,
+			a.allot_date AS allotDate,
+			d.name AS allotName,
+			case when b.shop_name is null then c.warehouse_name else b.shop_name END  AS allotFromName,
+			(SELECT b.shop_name FROM ycej_shop b WHERE a.allot_to = b.shop_id) AS allotToName,
+			a.allot_with AS allotWith,
+			a.car_condition AS carCondition,
+			a.comment,
+			a.certificate,
+			a.mail_date AS mailDate,
+			a.express_company AS expressCompany,
+			a.courier_number AS courierNumber,
+			a.allot_from_confirm AS allotFromConfirm,
+			u.name AS allotFromConfirmId,
+			a.allot_from_confirm_date AS allotFromConfirmDate,
+			a.allot_to_confirm AS allotToConfirm,
+			u1.name AS allotToConfirmId,
+			a.allot_to_confirm_date AS allotToConfirmDate,
+			a.allot_status AS allotStatus
+		FROM
+			ycej_allot a
+			LEFT JOIN ycej_shop b on a.allot_from = b.shop_id
+     		LEFT JOIN ycej_warehouse_management c on a.allot_from = c.id
+			LEFT JOIN sys_user u on u.user_id = a.allot_from_confirm_id
+			LEFT JOIN sys_user u1 on u1.user_id = a.allot_to_confirm_id
+			LEFT JOIN sys_user d ON a.allot_name = d.username
+		where vin = #{vin}
+     		
+    </select>
+</mapper>

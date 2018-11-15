@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>ycej-parents</artifactId>
+		<groupId>com.yicheejia.ycej</groupId>
+		<version>1.0.0</version>
+	</parent>
+
+	<groupId>com.yicheejia.ycej</groupId>
+	<artifactId>ycej-workflow</artifactId>
+	<version>1.0.0</version>
+
+	<name>ycej-workflow</name>
+	<url>http://www.example.com</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<shiro.version>1.4.0</shiro.version>
+	</properties>
+
+	<dependencies>
+	    <dependency>
+            <groupId>com.yicheejia.ycej</groupId>
+            <artifactId>ycej-common</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-spring-boot-starter-basic</artifactId>
+			<version>6.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.7</version>
+		</dependency>
+		<dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <version>${shiro.version}</version>
+        </dependency>
+	</dependencies>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+	</build>
+</project>

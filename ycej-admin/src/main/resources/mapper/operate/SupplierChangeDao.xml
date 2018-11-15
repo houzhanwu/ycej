@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.SupplierChangeDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.SupplierChangeEntity" id="supplierChangeMap">
+        <result property="id" column="id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="supplierContact" column="supplier_contact"/>
+        <result property="supplierMoblie" column="supplier_moblie"/>
+        <result property="supplierAdd" column="supplier_add"/>
+        <result property="provinceId" column="province_id"/>
+        <result property="provinceName" column="province_name"/>
+        <result property="cityId" column="city_id"/>
+        <result property="cityName" column="city_name"/>
+        <result property="supplierBail" column="supplier_bail"/>
+        <result property="supplierCarnum" column="supplier_carnum"/>
+        <result property="supplierBankcard" column="supplier_bankcard"/>
+        <result property="insertUser" column="insert_user"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="comment" column="comment"/>
+        <result property="dueBankCode" column="due_bank_code"/>
+        <result property="dueBank" column="due_bank"/>
+        <result property="branchBank" column="branch_bank"/>
+        <result property="supplierState" column="supplier_state"/>
+        <result property="supplierType" column="supplier_type"/>
+        <result property="vehicleType" column="vehicle_type"/>
+        <result property="carBrand" column="car_brand"/>
+        <result property="carBrandName" column="car_brand_name"/>
+        <result property="dueAccountType" column="due_account_type"/>
+        <result property="dueAccountName" column="due_account_name"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateSupplierChange" parameterType="com.yicheejia.modules.operate.entity.SupplierChangeEntity" >
+		update ycej_supplier_change
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="supplierName != null">  supplier_name = #{supplierName}, </if> 
+		<if test="supplierContact != null">  supplier_contact = #{supplierContact}, </if> 
+		<if test="supplierMoblie != null">  supplier_moblie = #{supplierMoblie}, </if> 
+		<if test="supplierAdd != null">  supplier_add = #{supplierAdd}, </if> 
+		<if test="provinceId != null">  province_id = #{provinceId}, </if> 
+		<if test="provinceName != null">  province_name = #{provinceName}, </if> 
+		<if test="cityId != null">  city_id = #{cityId}, </if> 
+		<if test="cityName != null">  city_name = #{cityName}, </if> 
+		<if test="supplierBail != null">  supplier_bail = #{supplierBail}, </if> 
+		<if test="supplierCarnum != null">  supplier_carnum = #{supplierCarnum}, </if> 
+		<if test="supplierBankcard != null">  supplier_bankcard = #{supplierBankcard}, </if> 
+		<if test="insertUser != null">  insert_user = #{insertUser}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="updateUser != null">  update_user = #{updateUser}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		<if test="comment != null">  comment = #{comment}, </if> 
+		<if test="dueBankCode != null">  due_bank_code = #{dueBankCode}, </if> 
+		<if test="dueBank != null">  due_bank = #{dueBank}, </if> 
+		<if test="branchBank != null">  branch_bank = #{branchBank}, </if> 
+		<if test="supplierState != null">  supplier_state = #{supplierState}, </if> 
+		<if test="supplierType != null">  supplier_type = #{supplierType}, </if> 
+		<if test="vehicleType != null">  vehicle_type = #{vehicleType}, </if> 
+		<if test="carBrand != null">  car_brand = #{carBrand}, </if> 
+		<if test="carBrandName != null">  car_brand_name = #{carBrandName}, </if> 
+		<if test="dueAccountType != null">  due_account_type = #{dueAccountType}, </if> 
+		<if test="dueAccountName != null">  due_account_name = #{dueAccountName}, </if> 
+		</trim>
+		where
+    </update>
+    <select id="selectAllPage" resultType="com.yicheejia.modules.operate.entity.SupplierChangeEntity">
+    	select 
+			s.id id,s.supplier_id supplierId,s.supplier_name supplierName,s.supplier_contact supplierContact,s.supplier_type supplierType,s.vehicle_type vehicleType,s.supplier_contact supplierContact,s.supplier_moblie supplierMoblie,s.supplier_add supplierAdd,s.province_id provinceId,
+		s.province_name provinceName,s.city_id cityId,s.city_name cityName,s.supplier_bail supplierBail,s.supplier_carnum supplierCarnum,s.supplier_bankcard supplierBankcard,s.supplier_state supplierState,s.insert_user insertUser,s.insert_time insertTime,s.update_user updateUser,s.update_time updateTime,s.comment comment,s.due_bank dueBank,
+		s.due_bank_code dueBankCode,s.branch_bank branchBank,s.due_account_type dueAccountType,s.due_account_name dueAccountName,
+		 c.carBrandName carBrandName
+			from ycej_supplier_change s
+		LEFT JOIN
+			(select GROUP_CONCAT(car_brand_name separator ',') carBrandName,supplier_id
+			from ycej_supplier_carbrand
+			GROUP BY supplier_id) c
+		on s.supplier_id = c.supplier_id
+		where s.supplier_id =#{supplierId}
+		order by s.insert_time desc
+    </select>
+	
+</mapper>

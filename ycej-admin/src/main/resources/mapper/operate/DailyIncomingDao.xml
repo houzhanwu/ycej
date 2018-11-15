@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.DailyIncomingDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.DailyIncomingEntity" id="dailyIncomingMap">
+        <result property="id" column="id"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="remark" column="remark"/>
+        <result property="comment" column="comment"/>
+        <result property="state" column="state"/>
+        <result property="insertUser" column="insert_user"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="shopName" column="shopName"/>
+        <result property="shopState" column="shopState"/>
+        <result property="shopAttr" column="shopAttr"/>
+        <result property="carBrand" column="carBrand"/>
+        <result property="carBrandName" column="carBrandName"/>
+    </resultMap>
+    
+    <!-- 修改 -->
+	<update id="updateDailyIncoming" parameterType="com.yicheejia.modules.operate.entity.DailyIncomingEntity" >
+		update ycej_daily_incoming
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="shopId != null">  shop_id = #{shopId}, </if> 
+		<if test="supplierId != null">  supplier_id = #{supplierId}, </if> 
+		<if test="remark != null">  remark = #{remark}, </if> 
+		<if test="comment != null">  comment = #{comment}, </if> 
+		<if test="state != null">  state = #{state}, </if> 
+		<if test="insertUser != null">  insert_user = #{insertUser}, </if> 
+		<if test="insertTime != null">  insert_time = #{insertTime}, </if> 
+		<if test="updateUser != null">  update_user = #{updateUser}, </if> 
+		<if test="updateTime != null">  update_time = #{updateTime}, </if> 
+		</trim>
+		where
+    </update>
+	<select id="selectAllPage" resultType="com.yicheejia.modules.operate.entity.DailyIncomingEntity">
+		SELECT
+			d.id id,
+			d.car_brand carBrand,
+			d.car_brand_name carBrandName,
+			d. comment comment,
+			d.insert_time insertTime,
+			d.insert_user insertUser,
+			d.remark remark,
+			d.shop_id shopId,
+			d.state state,
+			d.supplier_id supplierId,
+			d.update_time updateTime,
+			d.update_user updateUser,
+			p.shop_name shopName,
+			p.shop_attr shopAttr,
+			p.manage_state shopState
+			
+		FROM
+			ycej_daily_incoming d
+			LEFT JOIN ycej_shop p on d.shop_id = p.shop_id
+			order by d.update_time desc
+	
+	</select>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.PurchaseDetailDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.PurchaseDetailEntity" id="purchaseDetailMap">
+        <result property="purchDetailId" column="purch_detail_id"/>
+        <result property="purchId" column="purch_id"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="brandName" column="brand_name"/>
+        <result property="manufacturerId" column="manufacturer_id"/>
+        <result property="manufacturerName" column="manufacturer_name"/>
+        <result property="seriesId" column="series_id"/>
+        <result property="seriesName" column="series_name"/>
+        <result property="modelId" column="model_id"/>
+        <result property="modelName" column="model_name"/>
+        <result property="colour" column="colour"/>
+        <result property="colourName" column="colourName"/>
+        <result property="interiorColor" column="interior_color"/>
+        <result property="interiorColorName" column="interior_color_name"/>
+        <result property="displacement" column="displacement"/>
+        <result property="purchCostPrice" column="purch_cost_price"/>
+        <result property="sugSalePrice" column="sug_sale_price"/>
+        <result property="purchInvoicePrice" column="purch_invoice_price"/>
+        <result property="productDate" column="product_date"/>
+        <result property="vin" column="vin"/>
+        <result property="engineNo" column="engine_no"/>
+        <result property="remark" column="remark"/>
+        <result property="fileId" column="file_id"/>
+        <result property="inventoryId" column="inventory_id"/>
+    </resultMap>
+    
+    <insert id="insertReturnId" parameterType="com.yicheejia.modules.operate.entity.PurchaseDetailEntity" useGeneratedKeys="true" keyProperty="purchDetailId" keyColumn="purch_detail_id">
+    	insert 
+    		into 
+    	ycej_purchase_detail 
+    		(purch_id,brand_id,brand_name,manufacturer_id,manufacturer_name,series_id,series_name,model_id,model_name,colour,colour_name,interior_color,interior_color_name,displacement,purch_cost_price,sug_sale_price,purch_invoice_price,product_date,vin,engine_no,remark,file_id,inventory_id)
+    	value
+    		(#{purchId},#{brandId},#{brandName},#{manufacturerId},#{manufacturerName},#{seriesId},#{seriesName},#{modelId},#{modelName},#{colour},#{colourName},#{interiorColor},#{interiorColorName},#{displacement},#{purchCostPrice},#{sugSalePrice},#{purchInvoicePrice},#{productDate},#{vin},#{engineNo},#{remark},#{fileId},#{inventoryId})
+    </insert>
+    <!-- 车辆查询中根据库存id获取采购明细 -->
+	<select id="selectByInventoryId" resultType="com.yicheejia.modules.operate.entity.PurchaseDetailEntity">
+		select purch_detail_id purchDetailId,purch_id purchId ,brand_name brandName,manufacturer_name manufacturerName,series_name seriesName,model_name modelName,colour,colour_name colourName,interior_color interiorColor,interior_color_name interiorColorName,sug_sale_price sugSalePrice,engine_no engineNo,vin 
+		from ycej_purchase_detail
+		<where>
+			1=1
+			<if test="_parameter!= null and _parameter!=''">
+				inventory_id = #{inventoryId}
+			</if>
+		</where>
+	</select>
+</mapper>

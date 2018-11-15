@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.shop.dao.YcejShopDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.shop.entity.YcejShopEntity" id="ycejShopMap">
+        <result property="shopId" column="shop_id"/>
+        <result property="shopNo" column="shop_no"/>
+        <result property="shopAttr" column="shop_attr"/>
+        <result property="shopName" column="shop_name"/>
+        <result property="provinceName" column="province_name"/>
+        <result property="provinceId" column="province_id"/>
+        <result property="cityName" column="city_name"/>
+        <result property="cityId" column="city_id"/>
+        <result property="districtName" column="district_name"/>
+        <result property="districtCode" column="district_code"/>
+        <result property="shopAddress" column="shop_address"/>
+        <result property="posNo" column="pos_no"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="shopTel" column="shop_tel"/>
+        <result property="otherTel" column="other_tel"/>
+        <result property="cardNo" column="card_no"/>
+        <result property="cardNoUrl" column="card_no_url"/>
+        <result property="manageState" column="manage_state"/>
+        <result property="insTime" column="ins_time"/>
+        <result property="insUser" column="ins_user"/>
+        <result property="updTime" column="upd_time"/>
+        <result property="updUser" column="upd_user"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="getShopListForUser" resultType="java.util.Map">
+        select shop_id as shopId,shop_name as shopName from ycej_shop
+    </select>
+
+    <select id="getExistShopByShopNo" parameterType="java.lang.String" resultType="java.util.Map">
+        select shop_no from ycej_shop where shop_no like '%${shopNo}'
+    </select>
+
+    <select id="getShopListById" resultType="java.util.Map">
+        select shop_id as shopId,shop_name as shopName,shop_no as shopNo from ycej_shop
+        where 1=1
+        <if test="filterFlag == 1">
+            and shop_id
+            <choose>
+                <when test="shop_id_list != null and shop_id_list.size() > 0">
+                    in
+                    <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+                        #{shopId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    is null
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <select id="getProvinceTreeNode" resultType="com.yicheejia.common.ztree.TreeNode">
+        select province_id as provinceId,province_name as name from ycej_shop group by province_id order by province_id asc
+    </select>
+
+    <select id="getCityTreeNode" resultType="com.yicheejia.common.ztree.TreeNode">
+        select city_id as cityId,city_name as name from ycej_shop where province_id = #{provinceId} group by city_id order by city_id asc
+    </select>
+
+    <select id="getShopTreeNode" resultType="com.yicheejia.common.ztree.TreeNode">
+        select shop_id as shopId,shop_name as name from ycej_shop where city_id = #{cityId}
+    </select>
+    
+    <select id="warehouseAndShopListById" resultType="java.util.Map">
+    	select a.shop_id as shopId,a.shop_name as shopName, 0 as type from ycej_shop a 
+    	where 1=1
+        <if test="filterFlag == 1">
+            and shop_id
+            <choose>
+                <when test="shop_id_list != null and shop_id_list.size() > 0">
+                    in
+                    <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+                        #{shopId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    is null
+                </otherwise>
+            </choose>
+        </if>
+        union all
+        select b.id as wmId,b.warehouse_name as warehouseName,1 as type from ycej_warehouse_management b
+    </select>
+    <!-- 梁占豪 车辆查询模块 -->
+    <select id="getWarehourseOrShopForCarQuery" resultType="java.util.Map">
+    	select a.shop_id as shopId,a.shop_name as shopName, 0 as type from ycej_shop a 
+    	where 1=1
+        <if test="filterFlag == 1">
+            and shop_id
+            <choose>
+                <when test="shop_id_list != null and shop_id_list.size() > 0">
+                    in
+                    <foreach collection="shop_id_list" item="shopId" open="(" separator="," close=")">
+                        #{shopId}
+                    </foreach>
+                </when>
+                <otherwise>
+                    is null
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+    <select id="warehouseAndShopListAll" resultType="java.util.Map">
+    	select a.shop_id as shopId,a.shop_name as shopName, 0 as type from ycej_shop a 
+        union all
+        select b.id as wmId,b.warehouse_name as warehouseName,1 as type from ycej_warehouse_management b
+    </select>
+
+    <select id="queryShopCitiesByUserId" resultType="java.util.Map">
+        select DISTINCT yp.province_id as provinceId,yp.city_id as cityId,yp.province_name as provinceName,yp.city_name as cityName from sys_user_shop s
+            left join ycej_shop yp on s.shop_id = yp.shop_id where s.user_id = #{userId}
+    </select>
+    <!-- 梁占豪 车辆查询模块 获取门店信息，城市经理以名字展示 -->
+    <select id="selectByCondition" resultType="com.yicheejia.modules.shop.entity.YcejShopEntity">
+    	SELECT
+    		s.shop_id shopId,
+			u. NAME cityManagerName,
+			s.shop_no shopNo,
+			s.shop_name shopName,
+			s.shop_attr shopAttr,
+			s.manage_state manageState,
+			s.shop_address shopAddress,
+			s.manager_name managerName,
+			s.shop_tel shopTel,
+			s.card_no cardNo,
+			s.pos_no posNo,
+			s.city_manager_id cityManagerId
+		FROM
+			ycej_shop s
+		LEFT JOIN sys_user u ON s.city_manager_id = u.user_id
+		where s.shop_id = #{shopId}
+    </select>
+    <select id="selectAllForDailyIncoming" resultType="com.yicheejia.modules.shop.entity.YcejShopEntity">
+    	SELECT
+    	s.shop_id shopId,
+			u. NAME cityManagerName,
+			s.shop_no shopNo,
+			s.shop_name shopName,
+			s.shop_attr shopAttr,
+			s.manage_state manageState,
+			s.shop_address shopAddress,
+			s.manager_name managerName,
+			s.shop_tel shopTel,
+			s.card_no cardNo,
+			s.pos_no posNo
+		FROM
+			ycej_shop s
+		LEFT JOIN sys_user u ON s.city_manager_id = u.user_id
+		<where>
+			1=1
+			<if test="shopName != null and shopName != ''">
+			   and s.shop_name like '%${shopName}%'
+			</if>
+		</where>
+		
+    </select>
+    <select id="selectShopInfoById" resultType="com.yicheejia.modules.shop.entity.YcejShopEntity">
+    	SELECT
+    	s.shop_id shopId,
+			u. NAME cityManagerName,
+			s.shop_no shopNo,
+			s.shop_name shopName,
+			s.shop_attr shopAttr,
+			s.manage_state manageState,
+			s.shop_address shopAddress,
+			s.manager_name managerName,
+			s.shop_tel shopTel,
+			s.card_no cardNo,
+			s.pos_no posNo
+		FROM
+			ycej_shop s
+		LEFT JOIN sys_user u ON s.city_manager_id = u.user_id
+		<where>
+			1=1
+			<if test="shopId != null and shopId != ''">
+			   and s.shop_id = #{shopId}
+			</if>
+		</where>
+    </select>
+</mapper>

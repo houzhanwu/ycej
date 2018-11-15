@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarModelDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarModelEntity" id="carModelMap">
+        <result property="carModelId" column="car_model_id"/>
+        <result property="carSeriesId" column="car_series_id"/>
+        <result property="carModel" column="car_model"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+        <result property="updateId" column="update_id"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isEnabled" column="is_enabled"/>
+        <result property="guidePrice" column="guide_price"/>
+        <result property="carEmissions" column="car_emissions"/>
+        <result property="seatNum" column="seat_num"/>
+    </resultMap>
+    
+    <select id="carModelList" resultMap="carModelMap">
+		SELECT 	a.car_brand,a.car_brand_id,b.car_manufacturer,b.car_manufacturer_id,s.car_series,
+			s.car_series_id,m.car_model_id,m.car_model,m.guide_price,m.car_emissions,m.seat_num,m.insert_id,
+			u.`name` AS insertName,m.insert_time,m.update_id,uu.`name` AS updateName,m.update_time,m.is_enabled 
+		FROM ycej_car_model m LEFT JOIN ycej_car_series s ON m.car_series_id = s.car_series_id 
+		LEFT JOIN ycej_car_manufacturer b ON b.car_manufacturer_id = s.car_manufacturer_id 
+		LEFT JOIN ycej_car_brand a ON a.car_brand_id = b.car_brand_id   
+		LEFT JOIN sys_user u ON m.insert_id = u.username
+   		LEFT JOIN sys_user uu ON m.update_id = uu.username
+		WHERE 1=1
+		<if test="keyword != null and keyword != ''">
+			AND a.car_brand LIKE '%${keyword}%' or b.car_manufacturer LIKE '%${keyword}%' 
+			or s.car_series LIKE '%${keyword}%' or m.car_model LIKE '%${keyword}%'
+		</if>
+		ORDER BY m.insert_time DESC ,m.update_time DESC	
+<!-- 		<if test="carManufacturer != null and carManufacturer != ''"> -->
+<!-- 			AND b.car_manufacturer LIKE '%${carManufacturer}%' -->
+<!-- 		</if> -->
+<!-- 		<if test="carSeries != null and carSeries != ''"> -->
+<!-- 			AND s.car_series LIKE '%${carSeries}%' -->
+<!-- 		</if> -->
+<!-- 		<if test="carModel != null and carModel != ''"> -->
+<!-- 			AND m.car_model LIKE '%${carModel}%' -->
+<!-- 		</if> -->
+    </select>
+    <select id="getCarModelInfo" resultType="com.yicheejia.modules.operate.entity.CarModelEntity">
+    	SELECT 	a.car_brand,b.car_manufacturer,s.car_series,m.car_model_id,m.car_model,m.guide_price,
+		m.car_emissions,m.seat_num,m.insert_id,m.insert_time,m.update_id,m.update_time,m.is_enabled 
+		FROM ycej_car_model m LEFT JOIN ycej_car_series s ON m.car_series_id = s.car_series_id 
+		LEFT JOIN ycej_car_manufacturer b ON b.car_manufacturer_id = s.car_manufacturer_id 
+		LEFT JOIN ycej_car_brand a ON a.car_brand_id = b.car_brand_id    
+		WHERE 1=1 AND m.car_model_id = #{carModelId}
+    </select>
+    
+    <select id="getCarModelList" resultType="com.yicheejia.modules.operate.entity.CarModelEntity">
+    	SELECT 	a.car_brand,b.car_manufacturer,s.car_series,m.car_model_id,m.car_model,m.guide_price,
+		m.car_emissions,m.seat_num,m.insert_id,m.insert_time,m.update_id,m.update_time,m.is_enabled 
+		FROM ycej_car_model m LEFT JOIN ycej_car_series s ON m.car_series_id = s.car_series_id 
+		LEFT JOIN ycej_car_manufacturer b ON b.car_manufacturer_id = s.car_manufacturer_id 
+		LEFT JOIN ycej_car_brand a ON a.car_brand_id = b.car_brand_id    
+		WHERE 1=1 
+		<if test="carSeriesId != null and carSeriesId != ''">
+			AND s.car_series_id = #{carSeriesId}
+		</if>
+    </select>
+    
+    <insert id="insert" parameterType="com.yicheejia.modules.operate.entity.CarModelEntity">
+    	INSERT INTO ycej_car_model (car_series_id, car_model, `insert_id`, insert_time, guide_price, car_emissions, seat_num ,is_enabled) 
+    	VALUES (#{carSeries}, #{carModel}, #{insertId}, #{insertTime}, #{guidePrice}, #{carEmissions}, #{seatNum} ,#{isEnabled})
+    </insert>
+    
+    <select id="selectModelList" resultType="string">
+    	SELECT car_model FROM ycej_car_model a WHERE a.car_series_id = #{carSeriesId}
+    </select>
+
+</mapper>

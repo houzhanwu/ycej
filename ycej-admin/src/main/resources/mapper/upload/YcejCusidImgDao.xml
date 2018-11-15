@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.upload.dao.YcejCusidImgDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.upload.entity.YcejCusidImgEntity" id="ycejCusidImgMap">
+        <result property="cusImgId" column="cus_img_id"/>
+        <result property="imgName" column="img_name"/>
+        <result property="fileId" column="file_id"/>
+        <result property="businessId" column="business_id"/>
+        <result property="fileType" column="file_type"/>
+        <result property="insertId" column="insert_id"/>
+        <result property="insertTime" column="insert_time"/>
+    </resultMap>
+	<insert id="insertReturnId" parameterType="com.yicheejia.modules.upload.entity.YcejCusidImgEntity"  useGeneratedKeys="true" keyProperty="cusImgId">
+		insert into ycej_cusid_img
+		(img_name,file_id,business_id,file_type,insert_id,insert_time)
+			value
+		(#{imgName},#{fileId},#{businessId},#{fileType},#{insertId},sysdate())
+	</insert>
+
+	<select id="selectAllPic" resultType="com.yicheejia.modules.upload.entity.YcejCusidImgEntity">
+		select i.cus_img_id cusImgId,f.file_path imgName,i.file_type fileType
+			from ycej_cusid_img i
+		left join 
+			ycej_file f
+		on  i.file_id=f.file_id
+		where i.business_id=#{customerId}
+		
+	</select>
+</mapper>

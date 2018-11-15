@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.ShopInformationDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.ShopInformationEntity" id="shopInformationMap">
+        <result property="shopId" column="shop_id"/>
+        <result property="shopName" column="shop_name"/>
+        <result property="shopownerName" column="shopowner_name"/>
+        <result property="shopownerMobile" column="shopowner_mobile"/>
+        <result property="shopownerIdcard" column="shopowner_idcard"/>
+        <result property="shopAdd" column="shop_add"/>
+        <result property="shopStatus" column="shop_status"/>
+        <result property="shopProperty" column="shop_property"/>
+        <result property="posId" column="pos_id"/>
+        <result property="provinceId" column="province_id"/>
+        <result property="cityId" column="city_id"/>
+    </resultMap>
+
+
+</mapper>

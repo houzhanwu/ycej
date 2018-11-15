@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yicheejia.modules.operate.dao.CarColorDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yicheejia.modules.operate.entity.CarColorEntity" id="carColorMap">
+        <result property="id" column="id"/>
+        <result property="color" column="color"/>
+        <result property="insUser" column="ins_user"/>
+        <result property="insTime" column="ins_time"/>
+    </resultMap>
+
+	<select id="selectAllColors" resultType="java.util.Map">
+		select id,color from ycej_car_color where decoration_color is null
+	</select>
+
+	<select id="selectAllDecorationColors" resultType="java.util.Map">
+		select id,decoration_color from ycej_car_color where color is null
+	</select>
+    
+    <!-- 修改 -->
+	<update id="updateCarColor" parameterType="com.yicheejia.modules.operate.entity.CarColorEntity" >
+		update ycej_car_color
+		<trim prefix="set" suffixOverrides=",">
+		<if test="id != null">  id = #{id}, </if> 
+		<if test="color != null">  color = #{color}, </if> 
+		<if test="insUser != null">  ins_user = #{insUser}, </if> 
+		<if test="insTime != null">  ins_time = #{insTime}, </if> 
+		</trim>
+		where
+    </update>
+
+</mapper>
